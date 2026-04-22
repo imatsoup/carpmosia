@@ -40,6 +40,19 @@
     stock: 1
 
 - type: listing
+  id: SpellbookGrasp
+  name: Grasp
+  description: spellbook-alt-smite-desc # Carpmosia-edit - Wizard Smite Rework
+  productAction: ActionGrasp
+  cost:
+    WizCoin: 3
+  categories:
+  - SpellbookOffensive
+  conditions:
+  - !type:ListingLimitedStockCondition
+    stock: 1
+
+- type: listing
   id: SpellbookCluwne
   name: spellbook-cluwne-name
   description: spellbook-cluwne-desc

@@ -1,0 +1,40 @@
+- type: entity
+  abstract: true
+  parent: BaseAction
+  id: BaseTouchSpellAction
+  components:
+  - type: Action
+    itemIconStyle: BigAction
+    useDelay: 90
+  - type: TargetAction
+    interactOnMiss: false
+  - type: EntityTargetAction
+    whitelist:
+      components:
+      - MobState
+    canTargetSelf: false
+  - type: CarpMagic
+    requiresClothes: false
+    requiresSpeech: false
+
+
+- type: entity
+  parent: BaseTouchSpellAction
+  id: ActionGrasp
+  name: Grasp
+  description: Knocks a target down.
+  components:
+  - type: CarpMagic
+    requiresClothes: false
+    requiresSpeech: false
+  - type: Action
+    sound: !type:SoundPathSpecifier
+      path: /Audio/Magic/ethereal_exit.ogg
+    icon:
+      sprite: Objects/Magic/magicactions.rsi
+      state: gib
+  - type: EntityTargetAction
+    event: !type:GraspSpellEvent
+      path: Depths
+  - type: SpeakOnAction
+    sentence: R'CH T'H TR'TH
