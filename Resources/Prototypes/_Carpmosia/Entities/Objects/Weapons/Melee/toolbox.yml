@@ -1,0 +1,22 @@
+- type: entity
+  name: prophunter's toolbox
+  parent: ToolboxSyndicate
+  id: ToolboxProphunt
+  description: A deadly toolbox for hunting mimics.
+  components:
+  - type: Sprite
+    sprite: Objects/Tools/Toolboxes/toolbox_red.rsi
+    state: icon
+  - type: Item
+    sprite: Objects/Tools/Toolboxes/toolbox_red.rsi
+  - type: MeleeWeapon
+    damage:
+      types:
+        Radiation: 20
+  - type: PropHunter
+    damage:
+      types:
+        Radiation: 2
+    healing:
+      types:
+        Radiation: -10
