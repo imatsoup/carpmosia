@@ -9,6 +9,8 @@
     state: icon
   - type: Item
     sprite: Objects/Tools/Toolboxes/toolbox_red.rsi
+  - type: MultiHandedItem
+  - type: Unremoveable # Using something else in prophunt would be cheating
   - type: MeleeWeapon
     damage:
       types:
