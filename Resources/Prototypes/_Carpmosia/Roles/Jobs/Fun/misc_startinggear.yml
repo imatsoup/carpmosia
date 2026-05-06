@@ -1,3 +1,5 @@
+# Aghost gear
+
 - type: startingGear
   id: MobAghostGearCarp
   equipment:
@@ -20,3 +22,30 @@
     - AnomalyLocatorUnpowered
     - AdminHypo
     - SprayPainterRecharging
+
+# Prophunt Gear
+
+- type: startingGear
+  id: PropHunterStartingGear
+  equipment:
+    id: SecPDA
+    head: ClothingHeadHelmetBasic
+    jumpsuit: ClothingUniformJumpsuitSecurity
+    outerClothing: ClothingOuterArmorBasic
+    shoes: ClothingShoesBootsJack
+    ears: ClothingHeadsetSecurity
+    pocket1: FlashlightSeclite
+  inhand:
+    - ToolboxProphunt
+
+- type: startingGear
+  id: PropStartingGear
+  equipment:
+    id: MimePDA
+    ears: ClothingHeadsetService
+    mask: ClothingMaskGasSyndicate
+    jumpsuit: ClothingUniformMimeJumpsuit
+    shoes: ClothingShoesBootsJack
+    gloves: ClothingHandsGlovesColorWhite
+  inhand:
+    - ToolboxProphunt

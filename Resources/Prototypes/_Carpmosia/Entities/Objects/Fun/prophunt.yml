@@ -22,3 +22,12 @@
     healing:
       types:
         Radiation: -10
+
+- type: entity
+  parent: ChameleonProjectorNoBattery
+  id: ChameleonProjectorProphunt
+  name: mimic device
+  description: Advanced infiltrator device allowing perpetual disguise of inanimate objects.
+  components:
+  - type: MultiHandedItem
+  - type: Unremoveable
