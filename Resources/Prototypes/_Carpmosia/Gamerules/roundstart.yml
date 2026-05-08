@@ -5,6 +5,3 @@
   - type: ProphuntGameRule
   - type: KillCalloutRule
   - type: PointManager
-  - type: RespawnDeadRule
-  - type: RespawnTracker
-    respawnDelay: 5

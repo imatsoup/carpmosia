@@ -1,5 +1,5 @@
 - type: gamePreset
-  id: Prophunt
+  id: Prophunt41
   alias:
     - prophunt
     - ph
@@ -7,6 +7,6 @@
   description: Hide and seek between props and hunters with a twist
   maxPlayers: 15
   showInVote: true
-  supportedMaps: DeathMatchMapPool
+  supportedMaps: ProphuntMapPool
   rules:
-    - DeathMatch31
+    - Prophunt
