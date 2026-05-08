@@ -4,7 +4,7 @@
     - prophunt
     - ph
   name: Prophunt
-  description: Hide and seek between props and hunters with a twist
+  description: Hide and seek between chameleon mimics and hunters
   maxPlayers: 15
   showInVote: true
   supportedMaps: ProphuntMapPool
