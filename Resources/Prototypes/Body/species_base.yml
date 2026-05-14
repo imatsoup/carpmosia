@@ -158,6 +158,7 @@
     - FootstepSound
     - DoorBumpOpener
     - AnomalyHost
+    - CannotSuicide # Carpmosia-edit - No more tonguebiting
 
 - type: entity
   abstract: true
