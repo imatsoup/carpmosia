@@ -203,6 +203,8 @@
     blacklist:
       tags:
       - NukeOpsUplink
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkC20RBundle
@@ -241,6 +243,8 @@
     blacklist:
       tags:
       - NukeOpsUplink
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkBulldogBundle
@@ -295,6 +299,8 @@
     blacklist:
       tags:
       - NukeOpsUplink
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkGrenadeLauncherBundle
@@ -328,6 +334,11 @@
     Telecrystal: 30
   categories:
   - UplinkWeaponry
+  conditions: # Carpmosia-edit - Uplink overhaul
+    - !type:BuyerObjectiveWhitelistCondition # Carpmosia-edit - Uplink overhaul
+      whitelist: # Carpmosia-edit - Uplink overhaul
+        components: # Carpmosia-edit - Uplink overhaul
+        - DieCondition # Carpmosia-edit - Uplink overhaul
 
 # Explosives
 
@@ -348,6 +359,8 @@
     whitelist:
       tags:
       - NukeOpsUplink
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkSmokeGrenade
@@ -371,6 +384,9 @@
     Telecrystal: 6
   categories:
     - UplinkExplosives
+  conditions:
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkSingularityGrenade
@@ -402,6 +418,8 @@
     blacklist:
       components:
       - SurplusBundle
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkC4
@@ -519,6 +537,9 @@
     Telecrystal: 4
   categories:
   - UplinkExplosives
+  conditions:
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkGrenadeIncendiary
@@ -532,6 +553,9 @@
     Telecrystal: 4
   categories:
   - UplinkExplosives
+  conditions:
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 # Ammo
 
@@ -747,6 +771,9 @@
     Telecrystal: 3
   categories:
   - UplinkChemicals
+  conditions:
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkStimpack
@@ -1227,6 +1254,8 @@
     blacklist:
       components:
       - SurplusBundle
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkCameraBug
@@ -1261,6 +1290,8 @@
     blacklist:
       tags:
       - NukeOpsUplink
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkReinforcementRadioSyndicate
@@ -1280,6 +1311,8 @@
       blacklist:
         tags:
           - NukeOpsUplink
+    - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+      difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkReinforcementRadioSyndicateNukeops # Version for Nukeops that spawns another nuclear operative without the uplink.
@@ -1331,6 +1364,8 @@
       blacklist:
         tags:
           - NukeOpsUplink
+    - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+      difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkReinforcementRadioSyndicateAncestorNukeops # Version for Nukeops that spawns a syndicate monkey with the NukeOperative component.
@@ -1379,6 +1414,9 @@
     Telecrystal: 6
   categories:
     - UplinkAllies
+  conditions: # Carpmosia-edit - Uplink overhaul
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkSyndicatePersonalAI
@@ -1664,6 +1702,9 @@
     Telecrystal: 5
   categories:
   - UplinkWearables
+  conditions:
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkClothingOuterVestWebElite
@@ -1677,6 +1718,9 @@
     Telecrystal: 5
   categories:
   - UplinkWearables
+  conditions: # Carpmosia-edit - Uplink overhaul
+    - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+      difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkClothingShoesBootsMagSyndie
@@ -1729,6 +1773,9 @@
     Telecrystal: 7
   categories:
   - UplinkWearables
+  conditions: # Carpmosia-edit - Uplink overhaul
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: UplinkClothingOuterArmorRaid
@@ -2091,6 +2138,8 @@
   - !type:BuyerJobCondition
     whitelist:
     - Clown
+  - !type:BuyerDifficultyWhitelistCondition # Carpmosia-edit - Uplink overhaul
+    difficulty: 3 # Carpmosia-edit - Uplink overhaul
 
 - type: listing
   id: uplinkHotPotato
