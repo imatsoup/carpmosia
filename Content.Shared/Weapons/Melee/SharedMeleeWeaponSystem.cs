@@ -707,7 +707,7 @@ public abstract partial class SharedMeleeWeaponSystem : EntitySystem
 
             var attackedEvent = new AttackedEvent(meleeUid, user, GetCoordinates(ev.Coordinates));
             RaiseLocalEvent(entity, attackedEvent);
-            var modifiedDamage = DamageSpecifier.ApplyModifierSets(damage + hitEvent.BonusDamage + attackedEvent.BonusDamage, hitEvent.ModifiersList);
+            var modifiedDamage = DamageSpecifier.ApplyModifierSets(damage, hitEvent.ModifiersList);
 
             var damageResult = Damageable.ChangeDamage(entity, modifiedDamage, origin: user, ignoreResistances: resistanceBypass);
 

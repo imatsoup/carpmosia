@@ -23,10 +23,5 @@ public sealed class RequestShootEvent : EntityEventArgs
     /// The target the player is shooting at, if any.
     /// </summary>
     public NetEntity? Target;
-
-    /// <summary>
-    /// If the client wants to continuously shoot.
-    /// If true, the gun will continue firing until a stop event is sent from the client.
-    /// </summary>
-    public bool Continuous;
+    public List<int>? Shot;
 }
