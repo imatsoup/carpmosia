@@ -1,23 +1,16 @@
 using System.Linq;
 using System.Numerics;
 using Content.Client.Animations;
-using Content.Client.Clickable;
 using Content.Client.Gameplay;
 using Content.Client.Items;
 using Content.Client.Weapons.Ranged.Components;
-using Content.Shared.CCVar;
 using Content.Shared._RMC14.Weapons.Ranged.Prediction;
 using Content.Shared.CombatMode;
-using Content.Shared.Damage;
-using Content.Shared.Mobs.Systems;
-using Content.Shared.Physics;
-using Content.Shared.Weapons.Hitscan.Components;
 using Content.Shared.Weapons.Ranged;
 using Content.Shared.Weapons.Ranged.Components;
 using Content.Shared.Weapons.Ranged.Events;
 using Content.Shared.Weapons.Ranged.Systems;
 using Robust.Client.Animations;
-using Robust.Client.ComponentTrees;
 using Robust.Client.GameObjects;
 using Robust.Client.Graphics;
 using Robust.Client.Input;
@@ -25,13 +18,10 @@ using Robust.Client.Physics;
 using Robust.Client.Player;
 using Robust.Client.State;
 using Robust.Shared.Animations;
-using Robust.Shared.Audio;
-using Robust.Shared.Configuration;
-using Robust.Shared.Graphics;
 using Robust.Shared.Input;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
-using Robust.Shared.Physics;
+using Robust.Shared.Physics.Systems;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
 using SharedGunSystem = Content.Shared.Weapons.Ranged.Systems.SharedGunSystem;
@@ -89,6 +79,7 @@ public sealed partial class GunSystem : SharedGunSystem
         base.Initialize();
         UpdatesOutsidePrediction = true;
         SubscribeLocalEvent<AmmoCounterComponent, ItemStatusCollectMessage>(OnAmmoCounterCollect);
+        // SubscribeLocalEvent<AmmoCounterComponent, UpdateClientAmmoEvent>(OnUpdateClientAmmo);
         SubscribeAllEvent<MuzzleFlashEvent>(OnMuzzleFlash);
 
         // Plays animated effects on the client.
@@ -162,6 +153,8 @@ public sealed partial class GunSystem : SharedGunSystem
 
     public override void Update(float frameTime)
     {
+        base.Update(frameTime);
+
         if (!Timing.IsFirstTimePredicted)
             return;
 
@@ -347,4 +340,15 @@ public sealed partial class GunSystem : SharedGunSystem
         _animPlayer.Play((gunUid, uidPlayer), animTwo, "muzzle-flash-light");
     }
 
+    public override void ShootProjectile(EntityUid uid,
+        Vector2 direction,
+        Vector2 gunVelocity,
+        EntityUid gunUid,
+        EntityUid? user = null,
+        float speed = 20)
+    {
+        EnsureComp<PredictedProjectileClientComponent>(uid);
+        Physics.UpdateIsPredicted(uid);
+        base.ShootProjectile(uid, direction, gunVelocity, gunUid, user, speed);
+    }
 }

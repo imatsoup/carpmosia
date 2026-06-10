@@ -239,13 +239,13 @@ public abstract partial class SharedGunSystem : EntitySystem
     }
 
     // Goobstation - Crawling turret fix
-    // public void AttemptShoot(EntityUid user, Entity<GunComponent> gun, EntityCoordinates toCoordinates, EntityUid target)
-    // {
-    //     gun.Comp.Target = target;
-    //     gun.Comp.ShootCoordinates = toCoordinates;
-    //     AttemptShoot(user, gun, gun);
-    //     gun.ShotCounter = 0;
-    // }
+    public void AttemptShoot(EntityUid user, Entity<GunComponent> gun, EntityCoordinates toCoordinates, EntityUid target)
+    {
+        gun.Comp.Target = target;
+        gun.Comp.ShootCoordinates = toCoordinates;
+        AttemptShoot(user, gun);
+        gun.Comp.ShotCounter = 0;
+    }
 
     /// <summary>
     /// Shoots by assuming the gun is the user at default coordinates.
@@ -525,6 +525,7 @@ public abstract partial class SharedGunSystem : EntitySystem
             {
                 // Cartridge shoots something else
                 case CartridgeAmmoComponent cartridge:
+                    PopupSystem.PopupClient("Firing Cartridge", gun, user); // # DEBUGGING - DELETE BEFORE PR
                     if (!cartridge.Spent)
                     {
                         if (_netManager.IsServer || GunPrediction)
@@ -570,6 +571,7 @@ public abstract partial class SharedGunSystem : EntitySystem
                     break;
                 // Ammo shoots itself
                 case AmmoComponent newAmmo:
+                    PopupSystem.PopupClient("Firing Ammo", gun, user); // # DEBUGGING - DELETE BEFORE PR
                     if (_netManager.IsServer || GunPrediction)
                     {
                         CreateAndFireProjectiles((ent!.Value, newAmmo));
@@ -596,7 +598,7 @@ public abstract partial class SharedGunSystem : EntitySystem
                 case HitscanAmmoComponent:
                     if (ent == null)
                         break;
-
+                    PopupSystem.PopupClient("Firing hitscan", gun, user); // # DEBUGGING - DELETE BEFORE PR
                     var hitscanEv = new HitscanTraceEvent
                     {
                         FromCoordinates = fromCoordinates,
@@ -610,6 +612,7 @@ public abstract partial class SharedGunSystem : EntitySystem
                     Del(ent);
 
                     Audio.PlayPredicted(gun.Comp.SoundGunshotModified, gun, user);
+                    Recoil(user, mapDirection, gun.Comp.CameraRecoilScalarModified);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -710,65 +713,65 @@ public abstract partial class SharedGunSystem : EntitySystem
 
     #region Hitscan effects
 
-    private void FireEffects(EntityCoordinates fromCoordinates, float distance, Angle mapDirection, HitscanBasicVisualsComponent hitscan, EntityUid? hitEntity = null)
-    {
-        // Lord
-        // Forgive me for the shitcode I am about to do
-        // Effects tempt me not
-        var sprites = new List<(NetCoordinates coordinates, Angle angle, SpriteSpecifier sprite, float scale)>();
-        var gridUid = fromCoordinates.GetGridUid(EntityManager);
-        var angle = mapDirection;
+    // private void FireEffects(EntityCoordinates fromCoordinates, float distance, Angle mapDirection, HitscanBasicVisualsComponent hitscan, EntityUid? hitEntity = null)
+    // {
+    //     // Lord
+    //     // Forgive me for the shitcode I am about to do
+    //     // Effects tempt me not
+    //     var sprites = new List<(NetCoordinates coordinates, Angle angle, SpriteSpecifier sprite, float scale)>();
+    //     var gridUid = fromCoordinates.GetGridUid(EntityManager);
+    //     var angle = mapDirection;
 
-        // We'll get the effects relative to the grid / map of the firer
-        // Look you could probably optimise this a bit with redundant transforms at this point.
-        var xformQuery = GetEntityQuery<TransformComponent>();
+    //     // We'll get the effects relative to the grid / map of the firer
+    //     // Look you could probably optimise this a bit with redundant transforms at this point.
+    //     var xformQuery = GetEntityQuery<TransformComponent>();
 
-        if (xformQuery.TryGetComponent(gridUid, out var gridXform))
-        {
-            var (_, gridRot, gridInvMatrix) = TransformSystem.GetWorldPositionRotationInvMatrix(gridXform, xformQuery);
+    //     if (xformQuery.TryGetComponent(gridUid, out var gridXform))
+    //     {
+    //         var (_, gridRot, gridInvMatrix) = TransformSystem.GetWorldPositionRotationInvMatrix(gridXform, xformQuery);
 
-            fromCoordinates = new EntityCoordinates(gridUid.Value,
-                Vector2.Transform(fromCoordinates.ToMapPos(EntityManager, TransformSystem), gridInvMatrix));
+    //         fromCoordinates = new EntityCoordinates(gridUid.Value,
+    //             Vector2.Transform(fromCoordinates.ToMapPos(EntityManager, TransformSystem), gridInvMatrix));
 
-            // Use the fallback angle I guess?
-            angle -= gridRot;
-        }
+    //         // Use the fallback angle I guess?
+    //         angle -= gridRot;
+    //     }
 
-        if (distance >= 1f)
-        {
-            if (hitscan.MuzzleFlash != null)
-            {
-                var coords = fromCoordinates.Offset(angle.ToVec().Normalized() / 2);
-                var netCoords = GetNetCoordinates(coords);
+    //     if (distance >= 1f)
+    //     {
+    //         if (hitscan.MuzzleFlash != null)
+    //         {
+    //             var coords = fromCoordinates.Offset(angle.ToVec().Normalized() / 2);
+    //             var netCoords = GetNetCoordinates(coords);
 
-                sprites.Add((netCoords, angle, hitscan.MuzzleFlash, 1f));
-            }
+    //             sprites.Add((netCoords, angle, hitscan.MuzzleFlash, 1f));
+    //         }
 
-            if (hitscan.TravelFlash != null)
-            {
-                var coords = fromCoordinates.Offset(angle.ToVec() * (distance + 0.5f) / 2);
-                var netCoords = GetNetCoordinates(coords);
+    //         if (hitscan.TravelFlash != null)
+    //         {
+    //             var coords = fromCoordinates.Offset(angle.ToVec() * (distance + 0.5f) / 2);
+    //             var netCoords = GetNetCoordinates(coords);
 
-                sprites.Add((netCoords, angle, hitscan.TravelFlash, distance - 1.5f));
-            }
-        }
+    //             sprites.Add((netCoords, angle, hitscan.TravelFlash, distance - 1.5f));
+    //         }
+    //     }
 
-        if (hitscan.ImpactFlash != null)
-        {
-            var coords = fromCoordinates.Offset(angle.ToVec() * distance);
-            var netCoords = GetNetCoordinates(coords);
+    //     if (hitscan.ImpactFlash != null)
+    //     {
+    //         var coords = fromCoordinates.Offset(angle.ToVec() * distance);
+    //         var netCoords = GetNetCoordinates(coords);
 
-            sprites.Add((netCoords, angle.FlipPositive(), hitscan.ImpactFlash, 1f));
-        }
+    //         sprites.Add((netCoords, angle.FlipPositive(), hitscan.ImpactFlash, 1f));
+    //     }
 
-        if (_netManager.IsServer && sprites.Count > 0)
-        {
-            RaiseNetworkEvent(new HitscanEvent
-            {
-                Sprites = sprites,
-            }, Filter.Pvs(fromCoordinates, entityMan: EntityManager));
-        }
-    }
+    //     if (_netManager.IsServer && sprites.Count > 0)
+    //     {
+    //         RaiseNetworkEvent(new HitscanEvent
+    //         {
+    //             Sprites = sprites,
+    //         }, Filter.Pvs(fromCoordinates, entityMan: EntityManager));
+    //     }
+    // }
 
     #endregion
 
@@ -843,7 +846,7 @@ public abstract partial class SharedGunSystem : EntitySystem
         _recoil.KickCamera(user.Value, recoil.Normalized() * 0.5f * recoilScalar);
     }
 
-    public void ShootProjectile(EntityUid uid, Vector2 direction, Vector2 gunVelocity, EntityUid? gunUid, EntityUid? user = null, float speed = ProjectileSpeed)
+    public virtual void ShootProjectile(EntityUid uid, Vector2 direction, Vector2 gunVelocity, EntityUid gunUid, EntityUid? user = null, float speed = 20f)
     {
         var physics = EnsureComp<PhysicsComponent>(uid);
         Physics.SetBodyStatus(uid, physics, BodyStatus.InAir);
@@ -854,12 +857,10 @@ public abstract partial class SharedGunSystem : EntitySystem
         Physics.SetLinearVelocity(uid, finalLinear, body: physics);
 
         var projectile = EnsureComp<ProjectileComponent>(uid);
+        Projectiles.SetShooter(uid, projectile, user ?? gunUid);
         projectile.Weapon = gunUid;
-        var shooter = user ?? gunUid;
-        if (shooter != null)
-            Projectiles.SetShooter(uid, projectile, shooter.Value);
 
-        TransformSystem.SetWorldRotation(uid, direction.ToWorldAngle() + projectile.Angle);
+        TransformSystem.SetWorldRotationNoLerp(uid, direction.ToWorldAngle());
     }
 
     public List<EntityUid>? ShootRequested(NetEntity netGun, NetCoordinates coordinates, NetEntity? target, List<int>? projectiles, ICommonSession session)
@@ -872,10 +873,6 @@ public abstract partial class SharedGunSystem : EntitySystem
         // Goobstation - Check combat mode on pilot (combat mode component is on pilot, not mech)
         var combatModeEntity = user.Value;
         var gunUser = user.Value;
-
-        // Goobstation - Handle mech pilot for gun lookup
-        if (TryComp<MechPilotComponent>(user.Value, out var mechPilot))
-            gunUser = mechPilot.Mech;
 
         if (!_combatMode.IsInCombatMode(combatModeEntity) ||
             !TryGetGun(gunUser, out var gun))
@@ -1064,6 +1061,32 @@ protected abstract void CreateEffect(EntityUid gunUid, MuzzleFlashEvent message,
     public sealed class HitscanEvent : EntityEventArgs
     {
         public List<(NetCoordinates coordinates, Angle angle, SpriteSpecifier Sprite, float Distance)> Sprites = [];
+    }
+
+    /// <summary>
+    /// Get the ammo count for a given EntityUid. Can be a firearm or magazine.
+    /// </summary>
+    public int GetAmmoCount(EntityUid uid)
+    {
+        var ammoEv = new GetAmmoCountEvent();
+        RaiseLocalEvent(uid, ref ammoEv);
+        return ammoEv.Count;
+    }
+
+    /// <summary>
+    /// Get the ammo capacity for a given EntityUid. Can be a firearm or magazine.
+    /// </summary>
+    public int GetAmmoCapacity(EntityUid uid)
+    {
+        var ammoEv = new GetAmmoCountEvent();
+        RaiseLocalEvent(uid, ref ammoEv);
+        return ammoEv.Capacity;
+    }
+
+    public override void Update(float frameTime)
+    {
+        UpdateBattery(frameTime);
+        UpdateBallistic(frameTime);
     }
 }
 
