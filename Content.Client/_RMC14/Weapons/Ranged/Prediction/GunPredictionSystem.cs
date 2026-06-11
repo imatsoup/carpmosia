@@ -6,8 +6,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using System.Linq;
+using System.Numerics;
 using Content.Client.Projectiles;
 using Content.Shared._RMC14.Weapons.Ranged.Prediction;
+using Content.Shared.Damage.Components;
+using Content.Shared.Fluids.Components;
+using Content.Shared.Mobs.Components;
 using Content.Shared.Projectiles;
 using Content.Shared.Weapons.Ranged.Events;
 using Content.Shared.Weapons.Ranged.Systems;
@@ -24,6 +28,7 @@ namespace Content.Client._RMC14.Weapons.Ranged.Prediction;
 
 public sealed partial class GunPredictionSystem : SharedGunPredictionSystem
 {
+    public const string ProjectileFixture = "projectile";
     [Dependency] private SharedGunSystem _gun = default!;
     [Dependency] private SharedPhysicsSystem _physics = default!;
     [Dependency] private IPlayerManager _player = default!;
@@ -101,13 +106,56 @@ public sealed partial class GunPredictionSystem : SharedGunPredictionSystem
             return;
         }
 
+        // Skip collision with shooter and weapon if IgnoreShooter is true
+        if (args.OurFixtureId != ProjectileFixture || !args.OtherFixture.Hard ||
+            projectile.DamagedEntity || projectile is { Weapon: null, OnlyCollideWhenShot: true })
+            return;
+
+        // Skip puddles - they should never be hit by projectiles
+        if (HasComp<PuddleComponent>(args.OtherEntity))
+            return;
+
+        // Check if contact has physics component
+        if (!TryComp<PhysicsComponent>(args.OtherEntity, out var contactPhysics))
+            return;
+
+        // Check if contact is anchored for directional filtering
+        var isAnchored = Transform(args.OtherEntity).Anchored;
+
+        // Additional filtering for non-anchored entities - match Update() logic
+        if (!isAnchored)
+        {
+            // Only hit non-anchored entities if they can be damaged or are mobs
+            var canBeHit = HasComp<DamageableComponent>(args.OtherEntity) ||
+                        HasComp<MobStateComponent>(args.OtherEntity);
+
+            if (!canBeHit)
+                return;
+        }
+
+        // For anchored entities (walls, fixtures), check if they're in the direction of travel
+        if (isAnchored && physics.LinearVelocity.LengthSquared() > 0.01f)
+        {
+            var projectileMapCoords = _transform.GetMapCoordinates(ent);
+            var contactMapCoords = _transform.GetMapCoordinates(args.OtherEntity);
+            var toContact = contactMapCoords.Position - projectileMapCoords.Position;
+
+            var toContactNormalized = toContact.Normalized();
+            var velocityNormalized = physics.LinearVelocity.Normalized();
+            var dot = Vector2.Dot(toContactNormalized, velocityNormalized);
+
+            // Only collide with anchored entities if they're in front
+            if (dot < 0.3f)
+                return;
+        }
+
         var netEnt = GetNetEntity(args.OtherEntity);
         var pos = _transform.GetMapCoordinates(args.OtherEntity);
         var hit = new HashSet<(NetEntity, MapCoordinates)> { (netEnt, pos) };
         var ev = new PredictedProjectileHitEvent(ent.Owner.Id, hit);
         RaiseNetworkEvent(ev);
 
-        _projectile.ProjectileCollide((ent, projectile, physics), args.OtherEntity);
+        _projectile.ProjectileCollide((ent, projectile, physics), args.OtherEntity, predicted: true);
     }
 
     private void OnServerProjectileStartup(Entity<PredictedProjectileServerComponent> ent, ref ComponentStartup args)
