@@ -19,6 +19,7 @@ using Robust.Client.GameObjects;
 using Robust.Client.Physics;
 using Robust.Client.Player;
 using Robust.Shared.Map;
+using Robust.Shared.Physics;
 using Robust.Shared.Physics.Components;
 using Robust.Shared.Physics.Events;
 using Robust.Shared.Physics.Systems;
@@ -191,8 +192,101 @@ public sealed partial class GunPredictionSystem : SharedGunPredictionSystem
             if (contacts.Count == 0)
                 continue;
 
-            var hit = new HashSet<(NetEntity, MapCoordinates)>();
+            // Get fixtures component
+            if (!TryComp<FixturesComponent>(uid, out var fixtures))
+                continue;
+
+            // Get the projectile fixture specifically
+            if (!fixtures.Fixtures.TryGetValue("projectile", out var projectileFixture))
+                continue;
+
+            var projectileMask = projectileFixture.CollisionMask;
+
+            // Get projectile position and velocity for directional checking
+            var projectileMapCoords = _transform.GetMapCoordinates(uid);
+            var projectileVelocity = physics.LinearVelocity;
+            var hasVelocity = projectileVelocity.LengthSquared() > 0.01f;
+
+            // Filter contacts - matching server-side logic from SharedProjectileSystem.OnStartCollide
+            var filteredContacts = new List<EntityUid>();
             foreach (var contact in contacts)
+            {
+                // Skip shooter and weapon to prevent immediate collision at spawn point
+                if (projectile.IgnoreShooter && (contact == projectile.Shooter || contact == projectile.Weapon))
+                    continue;
+
+                // Skip puddles - they should never be hit by projectiles
+                if (HasComp<PuddleComponent>(contact))
+                    continue;
+
+                // Check if contact has physics - if not, skip it
+                if (!TryComp<PhysicsComponent>(contact, out var contactPhysics))
+                    continue;
+
+
+                // Get contact fixtures to check which fixture is actually colliding
+                if (!TryComp<FixturesComponent>(contact, out var contactFixtures))
+                    continue;
+
+                // Check if contact is anchored
+                var isAnchored = Transform(contact).Anchored;
+
+                // Check if any of the contact's fixtures would collide with the projectile fixture
+                var shouldCollide = false;
+
+                foreach (var fixture in contactFixtures.Fixtures.Values)
+                {
+                    // Must be a hard fixture (not a trigger/sensor)
+                    if (!fixture.Hard)
+                        continue;
+
+                    // Must have collision layer overlap with projectile's mask
+                    if ((fixture.CollisionLayer & projectileMask) == 0)
+                        continue;
+
+                    shouldCollide = true;
+                    break;
+                }
+
+                if (!shouldCollide)
+                    continue;
+
+                // Additional component-based filtering for non-anchored entities
+                if (!isAnchored)
+                {
+                    // Only hit non-anchored entities if they can be damaged or are mobs
+                    var canBeHit = HasComp<DamageableComponent>(contact) ||
+                                HasComp<MobStateComponent>(contact);
+
+                    if (!canBeHit)
+                        continue;
+                }
+
+                // For anchored entities (walls, fixtures), check if they're in the direction of travel
+                // This prevents hitting walls behind the shooter
+                if (hasVelocity && isAnchored)
+                {
+                    var contactMapCoords = _transform.GetMapCoordinates(contact);
+                    var toContact = contactMapCoords.Position - projectileMapCoords.Position;
+
+                    // Calculate dot product to check if contact is in front of projectile
+                    var toContactNormalized = toContact.Normalized();
+                    var velocityNormalized = projectileVelocity.Normalized();
+                    var dot = Vector2.Dot(toContactNormalized, velocityNormalized);
+
+                    // Only collide with anchored entities if they're in front
+                    if (dot < 0.3f)
+                        continue;
+                }
+
+                filteredContacts.Add(contact);
+            }
+
+            if (filteredContacts.Count == 0)
+                continue;
+
+            var hit = new HashSet<(NetEntity, MapCoordinates)>();
+            foreach (var contact in filteredContacts)
             {
                 var netEnt = GetNetEntity(contact);
                 var pos = _transform.GetMapCoordinates(contact);
@@ -202,7 +296,7 @@ public sealed partial class GunPredictionSystem : SharedGunPredictionSystem
             var ev = new PredictedProjectileHitEvent(uid.Id, hit);
             RaiseNetworkEvent(ev);
 
-            _projectile.ProjectileCollide((uid, projectile, physics), contacts.First());
+            _projectile.ProjectileCollide((uid, projectile, physics), filteredContacts.First());
         }
 
         var predictedQuery = EntityQueryEnumerator<PredictedProjectileHitComponent, SpriteComponent, TransformComponent>();
