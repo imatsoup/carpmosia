@@ -1,22 +1,43 @@
+using System.Linq;
+using Content.Shared.Administration.Logs;
+using Content.Shared.Clothing.Components;
+using Content.Shared.Database;
+using Content.Shared.Examine;
+using Content.Shared.Interaction;
+using Content.Shared.Popups;
+using Content.Shared.Tag;
+using Content.Shared.Whitelist;
+using Robust.Shared.Audio.Systems;
+using Robust.Shared.Containers;
+using Robust.Shared.Prototypes;
 
 namespace Content.Shared.Clothing.EntitySystems;
 
-public sealed partial class GunUpgradeSystem : EntitySystem
+public sealed partial class SuitModSystem : EntitySystem
 {
+
+    [Dependency] private ISharedAdminLogManager _adminLog = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedContainerSystem _container = default!;
+    [Dependency] private EntityWhitelistSystem _entityWhitelist = default!;
+    [Dependency] private SharedPopupSystem _popup = default!;
 
     /// <inheritdoc/>
     public override void Initialize()
     {
+        SubscribeLocalEvent<UpgradeableSuitComponent, ComponentInit>(OnInit);
+        SubscribeLocalEvent<UpgradeableSuitComponent, AfterInteractUsingEvent>(OnAfterInteractUsing);
+        SubscribeLocalEvent<UpgradeableSuitComponent, ExaminedEvent>(OnExamine);
 
     }
 
-    private void RelayEvent<T>(Entity<UpgradeableSuitComponent> ent, ref T args) where T : notnull
-    {
-        foreach (var upgrade in GetCurrentUpgrades(ent))
-        {
-            RaiseLocalEvent(upgrade, ref args);
-        }
-    }
+    // private void RelayEvent<T>(Entity<UpgradeableSuitComponent> ent, ref T args) where T : notnull
+    // {
+    //     foreach (var upgrade in GetCurrentUpgrades(ent))
+    //     {
+    //         RaiseLocalEvent(upgrade, ref args);
+    //     }
+    // }
 
     private void OnExamine(Entity<UpgradeableSuitComponent> ent, ref ExaminedEvent args)
     {
@@ -36,7 +57,7 @@ public sealed partial class GunUpgradeSystem : EntitySystem
 
     private void OnAfterInteractUsing(Entity<UpgradeableSuitComponent> ent, ref AfterInteractUsingEvent args)
     {
-        if (args.Handled || !args.CanReach || !TryComp<SuitUpgradeComponent>(args.Used, out var upgradeComponent))
+        if (args.Handled || !args.CanReach || !TryComp<SuitModComponent>(args.Used, out var upgradeComponent))
             return;
 
         if (GetCurrentUpgrades(ent).Count >= ent.Comp.MaxUpgradeCount)
@@ -45,19 +66,32 @@ public sealed partial class GunUpgradeSystem : EntitySystem
             return;
         }
 
-        if (_entityWhitelist.IsWhitelistFail(ent.Comp.Whitelist, args.Used))
-            return;
+        // if (_entityWhitelist.IsWhitelistFail(ent.Comp.Whitelist, args.Used))
+        //     return;
 
-        if (GetCurrentUpgradeTags(ent).ToHashSet().IsSupersetOf(upgradeComponent.Tags))
-        {
-            _popup.PopupPredicted(Loc.GetString("upgradeable-gun-popup-already-present"), ent, args.User);
-            return;
-        }
+        // if (GetCurrentUpgradeTags(ent).ToHashSet().IsSupersetOf(upgradeComponent.Tags))
+        // {
+        //     _popup.PopupPredicted(Loc.GetString("upgradeable-gun-popup-already-present"), ent, args.User);
+        //     return;
+        // }
 
         args.Handled = _container.Insert(args.Used, _container.GetContainer(ent, ent.Comp.UpgradesContainerId));
         _audio.PlayPredicted(ent.Comp.InsertSound, ent, args.User);
         _popup.PopupClient(Loc.GetString("gun-upgrade-popup-insert", ("upgrade", args.Used), ("gun", ent.Owner)), args.User);
-        _gun.RefreshModifiers(ent.Owner);
+        // _gun.RefreshModifiers(ent.Owner);
+
+        var target = ent.Owner;
+
+        if(upgradeComponent.HelmUpgrade)
+        {
+            if (!TryComp<ToggleableClothingComponent>(ent.Owner, out var helm) || helm.ClothingUid == null)
+                return;
+
+             target = helm.ClothingUid.Value;
+        }
+
+        if(upgradeComponent.ToAdd != null)
+            EntityManager.AddComponents(target, upgradeComponent.ToAdd);
 
         _adminLog.Add(LogType.Action, LogImpact.Low, $"{ToPrettyString(args.User):player} inserted gun upgrade {ToPrettyString(args.Used)} into {ToPrettyString(ent.Owner)}.");
     }
@@ -65,15 +99,15 @@ public sealed partial class GunUpgradeSystem : EntitySystem
     /// <summary>
     /// Gets the entities inside the gun's upgrade container.
     /// </summary>
-    public HashSet<Entity<SuitUpgradeComponent>> GetCurrentUpgrades(Entity<UpgradeableSuitComponent> ent)
+    public HashSet<Entity<SuitModComponent>> GetCurrentUpgrades(Entity<UpgradeableSuitComponent> ent)
     {
         if (!_container.TryGetContainer(ent, ent.Comp.UpgradesContainerId, out var container))
-            return new HashSet<Entity<SuitUpgradeComponent>>();
+            return new HashSet<Entity<SuitModComponent>>();
 
-        var upgrades = new HashSet<Entity<SuitUpgradeComponent>>();
+        var upgrades = new HashSet<Entity<SuitModComponent>>();
         foreach (var contained in container.ContainedEntities)
         {
-            if (TryComp<SuitUpgradeComponent>(contained, out var upgradeComp))
+            if (TryComp<SuitModComponent>(contained, out var upgradeComp))
                 upgrades.Add((contained, upgradeComp));
         }
 

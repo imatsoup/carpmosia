@@ -1,3 +1,4 @@
+using Content.Shared.Clothing.EntitySystems;
 using Content.Shared.Whitelist;
 using Robust.Shared.Audio;
 using Robust.Shared.GameStates;
@@ -7,7 +8,7 @@ namespace Content.Shared.Clothing.Components;
 /// <summary>
 /// Component that stores and manages <see cref="SuitModComponent"/> that modify a given suit.
 /// </summary>
-[RegisterComponent, NetworkedComponent, Access(typeof(SuitUpgradeSystem))]
+[RegisterComponent, NetworkedComponent, Access(typeof(SuitModSystem))]
 public sealed partial class UpgradeableSuitComponent : Component
 {
     /// <summary>
@@ -19,8 +20,8 @@ public sealed partial class UpgradeableSuitComponent : Component
     /// <summary>
     /// Whitelist which denotes the types of upgrades that can be added.
     /// </summary>
-    [DataField]
-    public EntityWhitelist Whitelist = new();
+    // [DataField]
+    // public EntityWhitelist Whitelist = new();
 
     /// <summary>
     /// Sound played when upgrade is inserted.
