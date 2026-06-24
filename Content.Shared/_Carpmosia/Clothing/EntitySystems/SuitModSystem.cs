@@ -1,11 +1,14 @@
 using System.Linq;
+using Content.Shared.ActionBlocker;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Clothing.Components;
+using Content.Shared.Clothing.Events;
 using Content.Shared.Database;
 using Content.Shared.Examine;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
 using Content.Shared.Tag;
+using Content.Shared.Verbs;
 using Content.Shared.Whitelist;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
@@ -16,6 +19,7 @@ namespace Content.Shared.Clothing.EntitySystems;
 public sealed partial class SuitModSystem : EntitySystem
 {
 
+    [Dependency] private ActionBlockerSystem _actionBlocker = default!;
     [Dependency] private ISharedAdminLogManager _adminLog = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private SharedContainerSystem _container = default!;
@@ -25,23 +29,31 @@ public sealed partial class SuitModSystem : EntitySystem
     /// <inheritdoc/>
     public override void Initialize()
     {
-        SubscribeLocalEvent<UpgradeableSuitComponent, ComponentInit>(OnInit);
-        SubscribeLocalEvent<UpgradeableSuitComponent, AfterInteractUsingEvent>(OnAfterInteractUsing);
-        SubscribeLocalEvent<UpgradeableSuitComponent, ExaminedEvent>(OnExamine);
+        SubscribeLocalEvent<ModdableSuitComponent, ComponentInit>(OnInit);
+        SubscribeLocalEvent<ModdableSuitComponent, ExaminedEvent>(OnExamine);
+
+        SubscribeLocalEvent<ModdableSuitComponent, SuitRefreshModifiersEvent>(RelayEvent);
+
+        // SubscribeLocalEvent<GunUpgradeFireRateComponent, GunRefreshModifiersEvent>(OnFireRateRefresh);
+        // SubscribeLocalEvent<GunUpgradeSpeedComponent, GunRefreshModifiersEvent>(OnSpeedRefresh);
+        // SubscribeLocalEvent<GunUpgradeDamageComponent, GunShotEvent>(OnDamageGunShot);
+
+        SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<InteractionVerb>>(AddInsertVerb);
+        SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<AlternativeVerb>>(AddEjectVerb);
 
     }
 
-    // private void RelayEvent<T>(Entity<UpgradeableSuitComponent> ent, ref T args) where T : notnull
-    // {
-    //     foreach (var upgrade in GetCurrentUpgrades(ent))
-    //     {
-    //         RaiseLocalEvent(upgrade, ref args);
-    //     }
-    // }
-
-    private void OnExamine(Entity<UpgradeableSuitComponent> ent, ref ExaminedEvent args)
+    private void RelayEvent<T>(Entity<ModdableSuitComponent> ent, ref T args) where T : notnull
     {
-        using (args.PushGroup(nameof(UpgradeableSuitComponent)))
+        foreach (var upgrade in GetCurrentUpgrades(ent))
+        {
+            RaiseLocalEvent(upgrade, ref args);
+        }
+    }
+
+    private void OnExamine(Entity<ModdableSuitComponent> ent, ref ExaminedEvent args)
+    {
+        using (args.PushGroup(nameof(ModdableSuitComponent)))
         {
             foreach (var upgrade in GetCurrentUpgrades(ent))
             {
@@ -50,56 +62,85 @@ public sealed partial class SuitModSystem : EntitySystem
         }
     }
 
-    private void OnInit(Entity<UpgradeableSuitComponent> ent, ref ComponentInit args)
+    private void OnInit(Entity<ModdableSuitComponent> ent, ref ComponentInit args)
     {
         _container.EnsureContainer<Container>(ent, ent.Comp.UpgradesContainerId);
     }
 
-    private void OnAfterInteractUsing(Entity<UpgradeableSuitComponent> ent, ref AfterInteractUsingEvent args)
+    private void AddInsertVerb(Entity<ModdableSuitComponent> ent, ref GetVerbsEvent<InteractionVerb> args)
     {
-        if (args.Handled || !args.CanReach || !TryComp<SuitModComponent>(args.Used, out var upgradeComponent))
+        if (!args.CanAccess || !args.CanInteract || args.Hands == null || args.Using == null || !TryComp<SuitModComponent>(args.Using, out var mod) || GetCurrentUpgrades(ent).Count >= ent.Comp.MaxUpgradeCount)
             return;
 
-        if (GetCurrentUpgrades(ent).Count >= ent.Comp.MaxUpgradeCount)
-        {
-            _popup.PopupPredicted(Loc.GetString("upgradeable-gun-popup-upgrade-limit"), ent, args.User);
+        var container = _container.GetContainer(ent, ent.Comp.UpgradesContainerId);
+
+        if (!_actionBlocker.CanDrop(args.User))
             return;
-        }
 
-        // if (_entityWhitelist.IsWhitelistFail(ent.Comp.Whitelist, args.Used))
-        //     return;
+        if (container== null)
+            return;
 
-        // if (GetCurrentUpgradeTags(ent).ToHashSet().IsSupersetOf(upgradeComponent.Tags))
-        // {
-        //     _popup.PopupPredicted(Loc.GetString("upgradeable-gun-popup-already-present"), ent, args.User);
-        //     return;
-        // }
+        var verbData = args;
 
-        args.Handled = _container.Insert(args.Used, _container.GetContainer(ent, ent.Comp.UpgradesContainerId));
-        _audio.PlayPredicted(ent.Comp.InsertSound, ent, args.User);
-        _popup.PopupClient(Loc.GetString("gun-upgrade-popup-insert", ("upgrade", args.Used), ("gun", ent.Owner)), args.User);
-        // _gun.RefreshModifiers(ent.Owner);
-
-        var target = ent.Owner;
-
-        if(upgradeComponent.HelmUpgrade)
+        if (_container.CanInsert(args.Using.Value, container))
         {
-            if (!TryComp<ToggleableClothingComponent>(ent.Owner, out var helm) || helm.ClothingUid == null)
-                return;
-
-             target = helm.ClothingUid.Value;
+            InteractionVerb insertVerb = new()
+            {
+                Text = Name(args.Using.Value),
+                Category = VerbCategory.Insert,
+                Act = () =>
+                {
+                    _adminLog.Add(LogType.Action, LogImpact.Medium, $"{ToPrettyString(verbData.User):player} inserted {ToPrettyString(verbData.Using.Value)} into {ToPrettyString(ent)}");
+                    _container.Insert(verbData.Using.Value, container);
+                }
+            };
+            args.Verbs.Add(insertVerb);
         }
+    }
 
-        if(upgradeComponent.ToAdd != null)
-            EntityManager.AddComponents(target, upgradeComponent.ToAdd);
+    private void AddEjectVerb(Entity<ModdableSuitComponent> ent, ref GetVerbsEvent<AlternativeVerb> args)
+    {
+        if (!args.CanAccess || !args.CanInteract || args.Hands == null)
+            return;
 
-        _adminLog.Add(LogType.Action, LogImpact.Low, $"{ToPrettyString(args.User):player} inserted gun upgrade {ToPrettyString(args.Used)} into {ToPrettyString(ent.Owner)}.");
+        var container = _container.GetContainer(ent, ent.Comp.UpgradesContainerId);
+
+        if (!_actionBlocker.CanDrop(args.User))
+            return;
+
+        if (container== null)
+            return;
+
+        var verbData = args;
+
+        // Add the eject-item verbs
+        foreach (var item in container.ContainedEntities)
+        {
+            if (!_container.CanRemove(item, container))
+                continue;
+
+                // if (!_actionBlockerSystem.CanPickup(args.User, slot.Item!.Value))
+                //     continue;
+
+            var verbSubject = "Eject Upgrade";
+
+            AlternativeVerb verb = new()
+            {
+                IconEntity = GetNetEntity(item),
+                Act = () => _container.Remove(item, container)
+            };
+
+            verb.Text = verbSubject;
+            verb.Category = VerbCategory.Eject;
+
+            args.Verbs.Add(verb);
+        }
     }
 
     /// <summary>
     /// Gets the entities inside the gun's upgrade container.
     /// </summary>
-    public HashSet<Entity<SuitModComponent>> GetCurrentUpgrades(Entity<UpgradeableSuitComponent> ent)
+    public HashSet<Entity<SuitModComponent>> GetCurrentUpgrades(Entity<ModdableSuitComponent> ent)
     {
         if (!_container.TryGetContainer(ent, ent.Comp.UpgradesContainerId, out var container))
             return new HashSet<Entity<SuitModComponent>>();
@@ -117,7 +158,7 @@ public sealed partial class SuitModSystem : EntitySystem
     /// <summary>
     /// Gets the tags of the upgrades currently applied.
     /// </summary>
-    public IEnumerable<ProtoId<TagPrototype>> GetCurrentUpgradeTags(Entity<UpgradeableSuitComponent> ent)
+    public IEnumerable<ProtoId<TagPrototype>> GetCurrentUpgradeTags(Entity<ModdableSuitComponent> ent)
     {
         foreach (var upgrade in GetCurrentUpgrades(ent))
         {

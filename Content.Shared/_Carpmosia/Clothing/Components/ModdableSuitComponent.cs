@@ -9,7 +9,7 @@ namespace Content.Shared.Clothing.Components;
 /// Component that stores and manages <see cref="SuitModComponent"/> that modify a given suit.
 /// </summary>
 [RegisterComponent, NetworkedComponent, Access(typeof(SuitModSystem))]
-public sealed partial class UpgradeableSuitComponent : Component
+public sealed partial class ModdableSuitComponent : Component
 {
     /// <summary>
     /// ID of container that holds upgrades.

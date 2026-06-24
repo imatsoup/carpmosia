@@ -6,7 +6,7 @@ using Robust.Shared.Prototypes;
 namespace Content.Shared.Clothing.Components;
 
 /// <summary>
-/// Used to denote compatibility with <see cref="UpgradeableSuitComponent"/>. Does not contain explicit behavior.
+/// Used to denote compatibility with <see cref="ModdableSuitComponent"/>. Does not contain explicit behavior.
 /// </summary>
 [RegisterComponent, NetworkedComponent, Access(typeof(SuitModSystem))]
 public sealed partial class SuitModComponent : Component
