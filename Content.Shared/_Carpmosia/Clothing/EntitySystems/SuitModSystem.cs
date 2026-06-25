@@ -1,17 +1,22 @@
 using System.Linq;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Administration.Logs;
+using Content.Shared.Armor;
+using Content.Shared.Clothing;
 using Content.Shared.Clothing.Components;
 using Content.Shared.Clothing.Events;
 using Content.Shared.Database;
+using Content.Shared.Emag.Systems;
 using Content.Shared.Examine;
 using Content.Shared.Interaction;
+using Content.Shared.Movement.Systems;
 using Content.Shared.Popups;
 using Content.Shared.Tag;
 using Content.Shared.Verbs;
 using Content.Shared.Whitelist;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
+using Robust.Shared.GameObjects;
 using Robust.Shared.Prototypes;
 
 namespace Content.Shared.Clothing.EntitySystems;
@@ -34,9 +39,9 @@ public sealed partial class SuitModSystem : EntitySystem
 
         SubscribeLocalEvent<ModdableSuitComponent, SuitRefreshModifiersEvent>(RelayEvent);
 
-        // SubscribeLocalEvent<GunUpgradeFireRateComponent, GunRefreshModifiersEvent>(OnFireRateRefresh);
-        // SubscribeLocalEvent<GunUpgradeSpeedComponent, GunRefreshModifiersEvent>(OnSpeedRefresh);
-        // SubscribeLocalEvent<GunUpgradeDamageComponent, GunShotEvent>(OnDamageGunShot);
+        SubscribeLocalEvent<SuitModCustomComponent, SuitRefreshModifiersEvent>(OnAddComponentsMod);
+        SubscribeLocalEvent<SuitModSpeedMalusComponent, SuitRefreshModifiersEvent>(OnSpeedMalusMod);
+        SubscribeLocalEvent<SuitModSpeedMalusComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshMovespeed);
 
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<InteractionVerb>>(AddInsertVerb);
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<AlternativeVerb>>(AddEjectVerb);
@@ -135,6 +140,23 @@ public sealed partial class SuitModSystem : EntitySystem
 
             args.Verbs.Add(verb);
         }
+    }
+
+    public void OnAddComponentsMod(Entity<SuitModCustomComponent> ent, ref SuitRefreshModifiersEvent args)
+    {
+        EntityManager.AddComponents(args.Suit, ent.Comp.ComponentsToAdd);
+    }
+
+    public void OnSpeedMalusMod(Entity<SuitModSpeedMalusComponent> ent, ref SuitRefreshModifiersEvent args)
+    {
+        var ev = new RefreshMovementSpeedModifiersEvent();
+
+        RaiseLocalEvent(ent, ev);
+    }
+
+    private void OnRefreshMovespeed(Entity<SuitModSpeedMalusComponent> ent, ref RefreshMovementSpeedModifiersEvent args)
+    {
+        args.ModifySpeed(ent.Comp.Modifier, ent.Comp.Modifier);
     }
 
     /// <summary>

@@ -6,5 +6,5 @@ namespace Content.Shared.Clothing.Events;
 /// </summary>
 [ByRefEvent]
 public record struct SuitRefreshModifiersEvent(
-    Entity<ModdableSuitComponent> suit
+    Entity<ModdableSuitComponent> Suit
 );
