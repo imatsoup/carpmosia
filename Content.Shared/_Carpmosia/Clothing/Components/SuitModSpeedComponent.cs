@@ -9,7 +9,7 @@ namespace Content.Shared.Clothing.Components;
 /// Used with <see cref="ModdableSuitComponent"/> and <see cref="SuitModComponent"> for upgrades that affect movement speed.
 /// </summary>
 [RegisterComponent, NetworkedComponent, Access(typeof(SuitModSystem))]
-public sealed partial class SuitModSpeedMalusComponent : Component
+public sealed partial class SuitModSpeedComponent : Component
 {
 
     [DataField]

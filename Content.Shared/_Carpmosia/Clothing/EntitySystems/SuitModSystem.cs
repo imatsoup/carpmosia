@@ -40,8 +40,8 @@ public sealed partial class SuitModSystem : EntitySystem
         SubscribeLocalEvent<ModdableSuitComponent, SuitRefreshModifiersEvent>(RelayEvent);
 
         SubscribeLocalEvent<SuitModCustomComponent, SuitRefreshModifiersEvent>(OnAddComponentsMod);
-        SubscribeLocalEvent<SuitModSpeedMalusComponent, SuitRefreshModifiersEvent>(OnSpeedMalusMod);
-        SubscribeLocalEvent<SuitModSpeedMalusComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshMovespeed);
+        SubscribeLocalEvent<SuitModSpeedComponent, SuitRefreshModifiersEvent>(OnSpeedMod);
+        SubscribeLocalEvent<SuitModSpeedComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshMovespeed);
 
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<InteractionVerb>>(AddInsertVerb);
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<AlternativeVerb>>(AddEjectVerb);
@@ -147,14 +147,14 @@ public sealed partial class SuitModSystem : EntitySystem
         EntityManager.AddComponents(args.Suit, ent.Comp.ComponentsToAdd);
     }
 
-    public void OnSpeedMalusMod(Entity<SuitModSpeedMalusComponent> ent, ref SuitRefreshModifiersEvent args)
+    public void OnSpeedMod(Entity<SuitModSpeedComponent> ent, ref SuitRefreshModifiersEvent args)
     {
         var ev = new RefreshMovementSpeedModifiersEvent();
 
         RaiseLocalEvent(ent, ev);
     }
 
-    private void OnRefreshMovespeed(Entity<SuitModSpeedMalusComponent> ent, ref RefreshMovementSpeedModifiersEvent args)
+    private void OnRefreshMovespeed(Entity<SuitModSpeedComponent> ent, ref RefreshMovementSpeedModifiersEvent args)
     {
         args.ModifySpeed(ent.Comp.Modifier, ent.Comp.Modifier);
     }

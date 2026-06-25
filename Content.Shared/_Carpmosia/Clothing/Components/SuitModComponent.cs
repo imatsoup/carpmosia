@@ -21,8 +21,6 @@ public sealed partial class SuitModComponent : Component
     [AlwaysPushInheritance]
     public ComponentRegistry? ToAdd = new();
 
-    public bool HelmUpgrade = false;
-
     /// <summary>
     /// Markup added to the suit on examine to display the upgrades.
     /// </summary>

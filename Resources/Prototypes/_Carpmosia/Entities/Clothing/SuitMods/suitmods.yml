@@ -1,0 +1,57 @@
+- type: entity
+  id: BaseSuitMod
+  parent: BaseItem
+  name: suit modkit
+  description: A modkit for a standard hardsuit.
+  abstract: true
+  components:
+  - type: Sprite
+    sprite: Objects/Tools/upgrade.rsi
+  - type: Item
+    size: Small
+  - type: SuitMod
+  - type: StaticPrice
+    price: 750
+  - type: Tag
+    tags:
+    - SuitMod
+
+- type: entity
+  id: SuitModSpeed
+  parent: BaseSuitMod
+  name: Hardsuit modkit (speed)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ SuitModSpeed ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModSpeed
+
+- type: entity
+  id: SuitModCustom
+  parent: BaseSuitMod
+  name: Hardsuit modkit (invis)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ SuitModSpeed ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModCustom
+    componentsToAdd:
+    - type: Stealth
