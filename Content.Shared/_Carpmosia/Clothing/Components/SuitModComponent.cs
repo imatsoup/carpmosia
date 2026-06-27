@@ -17,16 +17,9 @@ public sealed partial class SuitModComponent : Component
     [DataField]
     public List<ProtoId<TagPrototype>> Tags = new();
 
-    [DataField]
-    [AlwaysPushInheritance]
-    public ComponentRegistry? ToAdd = new();
-
     /// <summary>
     /// Markup added to the suit on examine to display the upgrades.
     /// </summary>
     [DataField]
     public LocId ExamineText;
-
-    [DataField]
-    public bool TargetDeployable;
 }

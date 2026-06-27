@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Administration.Logs;
@@ -5,11 +6,12 @@ using Content.Shared.Armor;
 using Content.Shared.Clothing;
 using Content.Shared.Clothing.Components;
 using Content.Shared.Clothing.Events;
+using Content.Shared.Containers.ItemSlots;
 using Content.Shared.Database;
+using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Emag.Systems;
 using Content.Shared.Examine;
 using Content.Shared.Interaction;
-using Content.Shared.Movement.Systems;
 using Content.Shared.Popups;
 using Content.Shared.Tag;
 using Content.Shared.Verbs;
@@ -25,11 +27,13 @@ public sealed partial class SuitModSystem : EntitySystem
 {
 
     [Dependency] private ActionBlockerSystem _actionBlocker = default!;
+    [Dependency] private EntityWhitelistSystem _entityWhitelist = default!;
     [Dependency] private ISharedAdminLogManager _adminLog = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private SharedContainerSystem _container = default!;
-    [Dependency] private EntityWhitelistSystem _entityWhitelist = default!;
+    [Dependency] private SharedHandsSystem _hands = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private SharedTransformSystem _transform = default!;
 
     /// <inheritdoc/>
     public override void Initialize()
@@ -39,9 +43,9 @@ public sealed partial class SuitModSystem : EntitySystem
 
         SubscribeLocalEvent<ModdableSuitComponent, SuitRefreshModifiersEvent>(RelayEvent);
 
-        SubscribeLocalEvent<SuitModCustomComponent, SuitRefreshModifiersEvent>(OnAddComponentsMod);
-        SubscribeLocalEvent<SuitModSpeedComponent, SuitRefreshModifiersEvent>(OnSpeedMod);
-        SubscribeLocalEvent<SuitModSpeedComponent, RefreshMovementSpeedModifiersEvent>(OnRefreshMovespeed);
+        SubscribeLocalEvent<SuitModBodyComponent, SuitRefreshModifiersEvent>(OnAddComponentsMod);
+        SubscribeLocalEvent<SuitModHelmetComponent, SuitRefreshModifiersEvent>(OnHelmetMod);
+
 
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<InteractionVerb>>(AddInsertVerb);
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<AlternativeVerb>>(AddEjectVerb);
@@ -74,7 +78,11 @@ public sealed partial class SuitModSystem : EntitySystem
 
     private void AddInsertVerb(Entity<ModdableSuitComponent> ent, ref GetVerbsEvent<InteractionVerb> args)
     {
-        if (!args.CanAccess || !args.CanInteract || args.Hands == null || args.Using == null || !TryComp<SuitModComponent>(args.Using, out var mod) || GetCurrentUpgrades(ent).Count >= ent.Comp.MaxUpgradeCount)
+        if (!args.CanAccess || !args.CanInteract || args.Hands == null || args.Using == null
+        || !TryComp<SuitModComponent>(args.Using, out var mod) || GetCurrentUpgrades(ent).Count >= ent.Comp.MaxUpgradeCount
+        || GetCurrentUpgradeTags(ent).ToHashSet().IsSupersetOf(mod.Tags)
+        // || _entityWhitelist.IsWhitelistFail(ent.Comp.Whitelist, args.Using)
+        )
             return;
 
         var container = _container.GetContainer(ent, ent.Comp.UpgradesContainerId);
@@ -87,6 +95,8 @@ public sealed partial class SuitModSystem : EntitySystem
 
         var verbData = args;
 
+        var user = args.User;
+
         if (_container.CanInsert(args.Using.Value, container))
         {
             InteractionVerb insertVerb = new()
@@ -97,6 +107,7 @@ public sealed partial class SuitModSystem : EntitySystem
                 {
                     _adminLog.Add(LogType.Action, LogImpact.Medium, $"{ToPrettyString(verbData.User):player} inserted {ToPrettyString(verbData.Using.Value)} into {ToPrettyString(ent)}");
                     _container.Insert(verbData.Using.Value, container);
+                    RefreshArmorMods(ent, user, true);
                 }
             };
             args.Verbs.Add(insertVerb);
@@ -117,6 +128,7 @@ public sealed partial class SuitModSystem : EntitySystem
             return;
 
         var verbData = args;
+        var user = args.User;
 
         // Add the eject-item verbs
         foreach (var item in container.ContainedEntities)
@@ -124,15 +136,20 @@ public sealed partial class SuitModSystem : EntitySystem
             if (!_container.CanRemove(item, container))
                 continue;
 
-                // if (!_actionBlockerSystem.CanPickup(args.User, slot.Item!.Value))
-                //     continue;
+            // if (!_actionBlockerSystem.CanPickup(args.User, slot.Item!.Value))
+            //     continue;
 
             var verbSubject = "Eject Upgrade";
 
             AlternativeVerb verb = new()
             {
                 IconEntity = GetNetEntity(item),
-                Act = () => _container.Remove(item, container)
+                Act = () =>
+                {
+                    RefreshArmorMods(ent, user, false);
+                    _container.Remove(item, container);
+                    _hands.TryPickupAnyHand(user, item);
+                }
             };
 
             verb.Text = verbSubject;
@@ -142,25 +159,37 @@ public sealed partial class SuitModSystem : EntitySystem
         }
     }
 
-    public void OnAddComponentsMod(Entity<SuitModCustomComponent> ent, ref SuitRefreshModifiersEvent args)
+    private void RefreshArmorMods(Entity<ModdableSuitComponent> ent, EntityUid user, bool isInserting)
     {
-        EntityManager.AddComponents(args.Suit, ent.Comp.ComponentsToAdd);
+
+        var ev = new SuitRefreshModifiersEvent(
+            ent,
+            user,
+            isInserting
+        );
+        RaiseLocalEvent(ent, ref ev);
     }
 
-    public void OnSpeedMod(Entity<SuitModSpeedComponent> ent, ref SuitRefreshModifiersEvent args)
+    public void OnAddComponentsMod(Entity<SuitModBodyComponent> ent, ref SuitRefreshModifiersEvent args)
     {
-        var ev = new RefreshMovementSpeedModifiersEvent();
-
-        RaiseLocalEvent(ent, ev);
+        if (args.IsInserting)
+            EntityManager.AddComponents(args.Suit, ent.Comp.ComponentsToAdd);
+        else
+            EntityManager.RemoveComponents(args.Suit, ent.Comp.ComponentsToAdd);
     }
 
-    private void OnRefreshMovespeed(Entity<SuitModSpeedComponent> ent, ref RefreshMovementSpeedModifiersEvent args)
+    public void OnHelmetMod(Entity<SuitModHelmetComponent> ent, ref SuitRefreshModifiersEvent args)
     {
-        args.ModifySpeed(ent.Comp.Modifier, ent.Comp.Modifier);
+        if (!TryComp<ToggleableClothingComponent>(args.Suit, out var toggle) || toggle.ClothingUid == null)
+            return;
+        if (args.IsInserting)
+            EntityManager.AddComponents(toggle.ClothingUid.Value, ent.Comp.ComponentsToAdd);
+        else
+            EntityManager.RemoveComponents(toggle.ClothingUid.Value, ent.Comp.ComponentsToAdd);
     }
 
     /// <summary>
-    /// Gets the entities inside the gun's upgrade container.
+    /// Gets the entities inside the upgrade container.
     /// </summary>
     public HashSet<Entity<SuitModComponent>> GetCurrentUpgrades(Entity<ModdableSuitComponent> ent)
     {

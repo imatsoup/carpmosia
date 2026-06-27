@@ -6,5 +6,7 @@ namespace Content.Shared.Clothing.Events;
 /// </summary>
 [ByRefEvent]
 public record struct SuitRefreshModifiersEvent(
-    Entity<ModdableSuitComponent> Suit
+    Entity<ModdableSuitComponent> Suit,
+    EntityUid User,
+    bool IsInserting
 );

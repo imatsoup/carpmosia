@@ -17,26 +17,7 @@
     - SuitMod
 
 - type: entity
-  id: SuitModSpeed
-  parent: BaseSuitMod
-  name: Hardsuit modkit (speed)
-  components:
-  - type: Sprite
-    layers:
-    - state: base
-    - state: overlay-1
-      color: "#ec9b2d"
-    - state: overlay-2
-      color: "#a71010"
-    - state: overlay-3
-      color: "#eb4c13"
-  - type: SuitMod
-    tags: [ SuitModSpeed ]
-    examineText: gun-upgrade-examine-text-damage
-  - type: SuitModSpeed
-
-- type: entity
-  id: SuitModCustom
+  id: SuitModInvis
   parent: BaseSuitMod
   name: Hardsuit modkit (invis)
   components:
@@ -50,8 +31,61 @@
     - state: overlay-3
       color: "#eb4c13"
   - type: SuitMod
-    tags: [ SuitModSpeed ]
+    tags: [ SuitModInvis ]
     examineText: gun-upgrade-examine-text-damage
-  - type: SuitModCustom
+  - type: SuitModBody
     componentsToAdd:
     - type: Stealth
+      minVisibility: 0.1
+      lastVisibility: 0.1
+
+- type: entity
+  id: SuitModHelmet
+  parent: BaseSuitMod
+  name: Hardsuit modkit (visor)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ SuitModHelmet ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModHelmet
+    componentsToAdd:
+    - type: ShowHealthBars
+    - type: ShowHealthIcons
+
+- type: entity
+  id: SuitModAxeslot
+  parent: BaseSuitMod
+  name: Hardsuit modkit (axeslot)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ SuitModAxe, SlotMod ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModBody
+    componentsToAdd:
+    - type: ItemSlots
+      slots:
+        axe_slot:
+          name: "axe"
+          insertSound: /Audio/Effects/packetrip.ogg
+          ejectSound: /Audio/Effects/packetrip.ogg
+          whitelist:
+            tags:
+              - FireAxe

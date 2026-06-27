@@ -9,7 +9,7 @@ namespace Content.Shared.Clothing.Components;
 /// Used with <see cref="ModdableSuitComponent"/> and <see cref="SuitModComponent"> for upgrades that have custom behavior or add new components.
 /// </summary>
 [RegisterComponent, NetworkedComponent, Access(typeof(SuitModSystem))]
-public sealed partial class SuitModCustomComponent : Component
+public sealed partial class SuitModBodyComponent : Component
 {
 
     [DataField]

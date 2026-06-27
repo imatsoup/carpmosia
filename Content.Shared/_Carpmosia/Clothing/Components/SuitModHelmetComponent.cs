@@ -6,12 +6,13 @@ using Robust.Shared.Prototypes;
 namespace Content.Shared.Clothing.Components;
 
 /// <summary>
-/// Used with <see cref="ModdableSuitComponent"/> and <see cref="SuitModComponent"> for upgrades that affect movement speed.
+/// Used with <see cref="ModdableSuitComponent"/> and <see cref="SuitModComponent"> for upgrades that add new components to hardsuit helmets.
 /// </summary>
 [RegisterComponent, NetworkedComponent, Access(typeof(SuitModSystem))]
-public sealed partial class SuitModSpeedComponent : Component
+public sealed partial class SuitModHelmetComponent : Component
 {
 
     [DataField]
-    public float Modifier = 0.2f;
+    [AlwaysPushInheritance]
+    public ComponentRegistry ComponentsToAdd = new();
 }

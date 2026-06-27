@@ -20,8 +20,8 @@ public sealed partial class ModdableSuitComponent : Component
     /// <summary>
     /// Whitelist which denotes the types of upgrades that can be added.
     /// </summary>
-    // [DataField]
-    // public EntityWhitelist Whitelist = new();
+    [DataField]
+    public EntityWhitelist Whitelist = new();
 
     /// <summary>
     /// Sound played when upgrade is inserted.
