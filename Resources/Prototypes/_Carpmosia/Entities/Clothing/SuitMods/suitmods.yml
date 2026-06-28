@@ -78,14 +78,9 @@
   - type: SuitMod
     tags: [ SuitModAxe, SlotMod ]
     examineText: gun-upgrade-examine-text-damage
-  - type: SuitModBody
-    componentsToAdd:
-    - type: ItemSlots
-      slots:
-        axe_slot:
-          name: "axe"
-          insertSound: /Audio/Effects/packetrip.ogg
-          ejectSound: /Audio/Effects/packetrip.ogg
-          whitelist:
-            tags:
-              - FireAxe
+  - type: SuitModSlot
+    keys: [ AxeSlot, BaseballBat ]
+    whitelist:
+      tags:
+      - FireAxe
+      - BaseballBat

@@ -6,12 +6,15 @@ using Robust.Shared.Prototypes;
 namespace Content.Shared.Clothing.Components;
 
 /// <summary>
-/// Used with <see cref="ModdableSuitComponent"/> and <see cref="SuitModComponent"> for upgrades that have custom behavior or add new components.
+/// Used <with cref="ModdableSuitComponent"/> <and cref="SuitModComponent"> for upgrades that add components to a hardsuit.
 /// </summary>
 [RegisterComponent, NetworkedComponent, Access(typeof(SuitModSystem))]
 public sealed partial class SuitModBodyComponent : Component
 {
 
+    /// <summary>
+    /// Components to add to the hardsuit. For visors, <use cref= "SuitModHelmetComponent">
+    /// </summary>
     [DataField]
     [AlwaysPushInheritance]
     public ComponentRegistry ComponentsToAdd = new();

@@ -6,7 +6,7 @@ using Robust.Shared.Prototypes;
 namespace Content.Shared.Clothing.Components;
 
 /// <summary>
-/// Used with <see cref="ModdableSuitComponent"/> and <see cref="SuitModComponent"> for upgrades that add new components to hardsuit helmets.
+/// Used <with cref="ModdableSuitComponent"/> <and cref="SuitModComponent"> for upgrades that add new components to hardsuit helmets.
 /// </summary>
 [RegisterComponent, NetworkedComponent, Access(typeof(SuitModSystem))]
 public sealed partial class SuitModHelmetComponent : Component

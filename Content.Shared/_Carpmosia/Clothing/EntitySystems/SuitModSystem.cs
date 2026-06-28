@@ -29,6 +29,7 @@ public sealed partial class SuitModSystem : EntitySystem
     [Dependency] private ActionBlockerSystem _actionBlocker = default!;
     [Dependency] private EntityWhitelistSystem _entityWhitelist = default!;
     [Dependency] private ISharedAdminLogManager _adminLog = default!;
+    [Dependency] private ItemSlotsSystem _itemSlotsSystem = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private SharedContainerSystem _container = default!;
     [Dependency] private SharedHandsSystem _hands = default!;
@@ -45,6 +46,7 @@ public sealed partial class SuitModSystem : EntitySystem
 
         SubscribeLocalEvent<SuitModBodyComponent, SuitRefreshModifiersEvent>(OnAddComponentsMod);
         SubscribeLocalEvent<SuitModHelmetComponent, SuitRefreshModifiersEvent>(OnHelmetMod);
+        SubscribeLocalEvent<SuitModSlotComponent, SuitRefreshModifiersEvent>(OnSlotMod);
 
 
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<InteractionVerb>>(AddInsertVerb);
@@ -186,6 +188,29 @@ public sealed partial class SuitModSystem : EntitySystem
             EntityManager.AddComponents(toggle.ClothingUid.Value, ent.Comp.ComponentsToAdd);
         else
             EntityManager.RemoveComponents(toggle.ClothingUid.Value, ent.Comp.ComponentsToAdd);
+    }
+
+    public void OnSlotMod(Entity<SuitModSlotComponent> ent, ref SuitRefreshModifiersEvent args)
+    {
+        foreach (var key in ent.Comp.Keys)
+        {
+            if (args.IsInserting)
+            {
+                ItemSlot slot = new();
+
+                if (ent.Comp.Whitelist != null)
+                    slot.Whitelist = ent.Comp.Whitelist;
+
+                _itemSlotsSystem.AddItemSlot(args.Suit, key, slot);
+            }
+            else
+            {
+                if (!_itemSlotsSystem.TryGetSlot(args.Suit, key, out var slot) || slot.ContainerSlot == null || slot.ContainerSlot.ContainedEntity == null)
+                    return;
+                _transform.PlaceNextTo(slot.ContainerSlot.ContainedEntity.Value, slot.ContainerSlot.ContainedEntity.Value);
+                _itemSlotsSystem.RemoveItemSlot(args.Suit, slot);
+            }
+        }
     }
 
     /// <summary>
