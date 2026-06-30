@@ -1,0 +1,26 @@
+- type: entity
+  id: SuitModJetpack
+  parent: BaseSuitMod
+  name: Hardsuit modkit (EJP)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ SuitModInvis ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModBody
+    componentsToAdd:
+    - type: GasTank
+      releasePressure: 21.3
+      air:
+        volume: 5
+        temperature: 293.15
+    - type: Jetpack
+      moleUsage: 0.00085

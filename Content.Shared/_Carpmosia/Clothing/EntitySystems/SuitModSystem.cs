@@ -192,22 +192,33 @@ public sealed partial class SuitModSystem : EntitySystem
 
     public void OnSlotMod(Entity<SuitModSlotComponent> ent, ref SuitRefreshModifiersEvent args)
     {
+        var i = 0;
         foreach (var key in ent.Comp.Keys)
         {
             if (args.IsInserting)
             {
+
                 ItemSlot slot = new();
 
-                if (ent.Comp.Whitelist != null)
-                    slot.Whitelist = ent.Comp.Whitelist;
-
-                _itemSlotsSystem.AddItemSlot(args.Suit, key, slot);
+                if (ent.Comp.Whitelists != null)
+                {
+                    // Safety measure to prevent going over the list size
+                    if (i <= ent.Comp.Whitelists.Count)
+                    {
+                        slot.Whitelist = ent.Comp.Whitelists[i];
+                        i += 1;
+                    }
+                    _itemSlotsSystem.AddItemSlot(args.Suit, key, slot);
+                }
             }
             else
             {
-                if (!_itemSlotsSystem.TryGetSlot(args.Suit, key, out var slot) || slot.ContainerSlot == null || slot.ContainerSlot.ContainedEntity == null)
+                if (!_itemSlotsSystem.TryGetSlot(args.Suit, key, out var slot) || slot.ContainerSlot == null)
                     return;
-                _transform.PlaceNextTo(slot.ContainerSlot.ContainedEntity.Value, slot.ContainerSlot.ContainedEntity.Value);
+
+                if (slot.ContainerSlot.ContainedEntity != null)
+                    _transform.PlaceNextTo(slot.ContainerSlot.ContainedEntity.Value, slot.ContainerSlot.ContainedEntity.Value);
+
                 _itemSlotsSystem.RemoveItemSlot(args.Suit, slot);
             }
         }

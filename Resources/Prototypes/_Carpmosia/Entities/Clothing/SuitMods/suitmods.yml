@@ -80,7 +80,8 @@
     examineText: gun-upgrade-examine-text-damage
   - type: SuitModSlot
     keys: [ AxeSlot, BaseballBat ]
-    whitelist:
-      tags:
-      - FireAxe
-      - BaseballBat
+    whitelists:
+      - tags:
+        - FireAxe
+      - tags:
+        - BaseballBat

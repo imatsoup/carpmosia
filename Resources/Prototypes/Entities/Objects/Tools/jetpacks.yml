@@ -47,10 +47,14 @@
     slots:
     - Back
   - type: GasTank
-    releasePressure: 21.3
+    releasePressure: 42.6
     air:
-      volume: 5
+      # 2 minutes of thrust
+      volume: 0.75
       temperature: 293.15
+      moles:
+        Oxygen: 0.153853429 # oxygen
+        Nitrogen: 0.153853429 # nitrogen
   - type: Jetpack
     moleUsage: 0.00085
   - type: Appearance

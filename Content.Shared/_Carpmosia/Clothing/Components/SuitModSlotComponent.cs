@@ -3,6 +3,7 @@ using Content.Shared.Whitelist;
 using Content.Shared.Tag;
 using Robust.Shared.GameStates;
 using Robust.Shared.Prototypes;
+using System.Collections.Generic;
 
 namespace Content.Shared.Clothing.Components;
 
@@ -14,7 +15,7 @@ public sealed partial class SuitModSlotComponent : Component
 {
 
     [DataField]
-    public EntityWhitelist? Whitelist;
+    public List<EntityWhitelist> Whitelists = [];
 
     /// <summary>
     /// The key that accompanies the itemslot. Used to get it for ejecting the item on removal of the mod.
