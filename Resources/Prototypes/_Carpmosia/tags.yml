@@ -6,3 +6,18 @@
 
 - type: Tag
   id: HudDiagnostic # Diagnostics goggles recipe :3
+
+- type: Tag
+  id: EngineeringMod
+
+- type: Tag
+  id: ScienceMod
+
+- type: Tag
+  id: CargoMod
+
+- type: Tag
+  id: MedicalMod
+
+- type: Tag
+  id: SecurityMod

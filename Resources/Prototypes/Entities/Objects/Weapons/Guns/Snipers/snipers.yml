@@ -37,6 +37,11 @@
         ents: []
   - type: StaticPrice
     price: 500
+  # Carpmosia-start - Hardsuit mods
+  - type: Tag
+    tags:
+    - Rifle
+  # Carpmosia-end - Hardsuit mods
 
 - type: entity
   name: Kardashev-Mosin

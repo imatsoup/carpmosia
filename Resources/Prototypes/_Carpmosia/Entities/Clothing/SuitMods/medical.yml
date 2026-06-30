@@ -1,0 +1,25 @@
+## Visor mods
+- type: entity
+  id: SuitModMedVisor
+  parent: BaseSuitMod
+  name: Hardsuit modkit (medical hud)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ MedicalVisorMod ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModHelmet
+    componentsToAdd:
+    - type: ShowHealthBars
+    - type: ShowHealthIcons
+  - type: Tag
+    tags:
+    - MedicalMod

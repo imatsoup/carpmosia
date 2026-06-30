@@ -58,6 +58,11 @@
       gun_chamber: !type:ContainerSlot
   - type: StaticPrice
     price: 500
+  # Carpmosia-start - Hardsuit mods
+  - type: Tag
+    tags:
+    - SMG
+  # Carpmosia-end - Hardsuit mods
 
 - type: entity
   name: Atreides

@@ -167,7 +167,6 @@
   - type: HideLayerClothing
     slots:
     - Tail
-  - type: ModdableSuit
 
 - type: entity
   abstract: true

@@ -40,6 +40,10 @@
     tags:
     - Hardsuit
     - WhitelistChameleon
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - EngineeringMod
 
 #Engineering Hardsuit
 - type: entity
@@ -76,6 +80,10 @@
     tags:
     - Hardsuit
     - WhitelistChameleon
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - EngineeringMod
 
 #Spationaut Hardsuit
 - type: entity
@@ -110,6 +118,10 @@
     - Hardsuit
     - WhitelistChameleon
     - HardsuitSpatio
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - CargoMod
 
 #Salvage Hardsuit
 - type: entity
@@ -146,6 +158,11 @@
     tags:
     - Hardsuit
     - WhitelistChameleon
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - CargoMod
+
 
 #Goliath Hardsuit
 - type: entity
@@ -185,6 +202,10 @@
     tags:
     - Hardsuit
     - WhitelistChameleon
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - CargoMod
 
 #Maxim Hardsuit
 - type: entity
@@ -218,6 +239,10 @@
     coolingCoefficient: 0.001
   - type: ToggleableClothing
     clothingPrototype: ClothingHeadHelmetHardsuitMaxim
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - CargoMod
 
 #Security Hardsuit
 - type: entity
@@ -253,6 +278,10 @@
     tags:
     - Hardsuit
     - WhitelistChameleon
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - SecurityMod
 
 #Brigmedic Hardsuit
 - type: entity
@@ -280,6 +309,11 @@
   - type: HeldSpeedModifier
   - type: ToggleableClothing
     clothingPrototype: ClothingHeadHelmetHardsuitBrigmedic
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - SecurityMod
+      - MedicalMod
 
 #Warden's Hardsuit
 - type: entity
@@ -311,6 +345,10 @@
   - type: HeldSpeedModifier
   - type: ToggleableClothing
     clothingPrototype: ClothingHeadHelmetHardsuitWarden
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - SecurityMod
 
 #Captain's Hardsuit
 - type: entity
@@ -347,6 +385,14 @@
     tags:
     - Hardsuit
     - WhitelistChameleon
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - EngineeringMod
+      - ScienceMod
+      - CargoMod
+      - MedicalMod
+      - SecurityMod
 
 #Chief Engineer's Hardsuit
 - type: entity
@@ -385,6 +431,10 @@
     tags:
     - Hardsuit
     - WhitelistChameleon
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - EngineeringMod
 
 #Chief Medical Officer's Hardsuit
 - type: entity
@@ -416,6 +466,10 @@
     tags:
     - Hardsuit
     - WhitelistChameleon
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - MedicalMod
 
 #Research Director's Hardsuit
 - type: entity
@@ -461,6 +515,11 @@
     price: 750
   - type: StealTarget
     stealGroup: ClothingOuterHardsuitRd
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - ScienceMod
+      - MedicalMod
 
 #Head of Security's Hardsuit
 - type: entity
@@ -493,6 +552,11 @@
   - type: HeldSpeedModifier
   - type: ToggleableClothing
     clothingPrototype: ClothingHeadHelmetHardsuitSecurityRed
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - SecurityMod
+      - MedicalMod
 
 #Luxury Mining Hardsuit
 - type: entity
@@ -526,6 +590,14 @@
   - type: HeldSpeedModifier
   - type: ToggleableClothing
     clothingPrototype: ClothingHeadHelmetHardsuitLuxury
+  - type: ModdableSuit
+    whitelist:
+      tags:
+      - EngineeringMod
+      - ScienceMod
+      - CargoMod
+      - MedicalMod
+      - SecurityMod
 
 #ANTAG HARDSUITS
 #Blood-red Hardsuit

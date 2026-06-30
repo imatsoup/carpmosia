@@ -1,7 +1,8 @@
+## Item storage slots
 - type: entity
-  id: SuitModJetpack
+  id: SuitModAxeSlot
   parent: BaseSuitMod
-  name: Hardsuit modkit (EJP)
+  name: Hardsuit modkit (axe-slot)
   components:
   - type: Sprite
     layers:
@@ -13,14 +14,64 @@
     - state: overlay-3
       color: "#eb4c13"
   - type: SuitMod
-    tags: [ SuitModInvis ]
+    tags: [ AxeSlotMod ]
     examineText: gun-upgrade-examine-text-damage
-  - type: SuitModBody
+  - type: SuitModSlot
+    keys: [ AxeSlot ]
+    whitelists:
+      - tags:
+        - FireAxe
+  - type: Tag
+    tags:
+    - EngineeringMod
+
+## Visor mods
+- type: entity
+  id: SuitModWeldingVisor
+  parent: BaseSuitMod
+  name: Hardsuit modkit (welding visor)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ WeldingVisorMod ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModHelmet
     componentsToAdd:
-    - type: GasTank
-      releasePressure: 21.3
-      air:
-        volume: 5
-        temperature: 293.15
-    - type: Jetpack
-      moleUsage: 0.00085
+    - type: EyeProtection
+    - type: FlashImmunity
+  - type: Tag
+    tags:
+    - WeldingMask
+    - EngineeringMod
+
+- type: entity
+  id: SuitModThermalVisor
+  parent: BaseSuitMod
+  name: Hardsuit modkit (thermal hud)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ ThermalVisorMod ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModHelmet
+    componentsToAdd:
+    - type: ThermalSight
+  - type: Tag
+    tags:
+    - EngineeringMod

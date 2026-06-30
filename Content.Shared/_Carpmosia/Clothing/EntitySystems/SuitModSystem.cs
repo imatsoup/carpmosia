@@ -13,6 +13,7 @@ using Content.Shared.Emag.Systems;
 using Content.Shared.Examine;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
+using Content.Shared.Inventory;
 using Content.Shared.Tag;
 using Content.Shared.Verbs;
 using Content.Shared.Whitelist;
@@ -27,6 +28,7 @@ public sealed partial class SuitModSystem : EntitySystem
 {
 
     [Dependency] private ActionBlockerSystem _actionBlocker = default!;
+    [Dependency] private ClothingSystem _clothing = default!;
     [Dependency] private EntityWhitelistSystem _entityWhitelist = default!;
     [Dependency] private ISharedAdminLogManager _adminLog = default!;
     [Dependency] private ItemSlotsSystem _itemSlotsSystem = default!;
@@ -66,6 +68,7 @@ public sealed partial class SuitModSystem : EntitySystem
     {
         using (args.PushGroup(nameof(ModdableSuitComponent)))
         {
+            args.PushMarkup("This suit supports a maximum of " + ent.Comp.MaxUpgradeCount + " suit mods.");
             foreach (var upgrade in GetCurrentUpgrades(ent))
             {
                 args.PushMarkup(Loc.GetString(upgrade.Comp.ExamineText));
@@ -83,8 +86,13 @@ public sealed partial class SuitModSystem : EntitySystem
         if (!args.CanAccess || !args.CanInteract || args.Hands == null || args.Using == null
         || !TryComp<SuitModComponent>(args.Using, out var mod) || GetCurrentUpgrades(ent).Count >= ent.Comp.MaxUpgradeCount
         || GetCurrentUpgradeTags(ent).ToHashSet().IsSupersetOf(mod.Tags)
-        // || _entityWhitelist.IsWhitelistFail(ent.Comp.Whitelist, args.Using)
+        || _entityWhitelist.IsWhitelistFail(ent.Comp.Whitelist, args.Using.Value)
+        || !_actionBlocker.CanDrop(args.User)
         )
+            return;
+
+        // Check if its currently equipped
+        if (TryComp<ClothingComponent>(ent, out var clothing) && clothing.InSlot == "outerClothing")
             return;
 
         var container = _container.GetContainer(ent, ent.Comp.UpgradesContainerId);
@@ -92,7 +100,7 @@ public sealed partial class SuitModSystem : EntitySystem
         if (!_actionBlocker.CanDrop(args.User))
             return;
 
-        if (container== null)
+        if (container == null)
             return;
 
         var verbData = args;
@@ -124,6 +132,10 @@ public sealed partial class SuitModSystem : EntitySystem
         var container = _container.GetContainer(ent, ent.Comp.UpgradesContainerId);
 
         if (!_actionBlocker.CanDrop(args.User))
+            return;
+
+        // Check if its currently equipped
+        if (TryComp<ClothingComponent>(ent, out var clothing) && clothing.InSlot == "outerClothing")
             return;
 
         if (container== null)

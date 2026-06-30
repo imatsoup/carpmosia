@@ -1,0 +1,28 @@
+# Item storage slot
+- type: entity
+  id: SuitModLongarmSlot
+  parent: BaseSuitMod
+  name: Hardsuit modkit (Longarm-slot)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ LongarmSlotMod ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModSlot
+    keys: [ longarm-slot ]
+    whitelists:
+      - tags:
+        - Shotgun
+        - Rifle
+        - SMG
+  - type: Tag
+    tags:
+    - CargoMod

@@ -1,0 +1,26 @@
+## Item storage slots
+- type: entity
+  id: SuitModCrusherSlot
+  parent: BaseSuitMod
+  name: Hardsuit modkit (crusher-slot)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ CrusherSlotMod ]
+    examineText: gun-upgrade-examine-text-damage
+  - type: SuitModSlot
+    keys: [ crusher-slot ]
+    whitelists:
+      - tags:
+        - Pickaxe
+  - type: Tag
+    tags:
+    - CargoMod
