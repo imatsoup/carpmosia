@@ -15,13 +15,13 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ JetpackMod ]
-    examineText: gun-upgrade-examine-text-damage
+    examineText: suit-mod-jetpack
   - type: SuitModBody
     componentsToAdd:
     - type: GasTank
       releasePressure: 21.3
       air:
-        volume: 5
+        volume: 0.2
         temperature: 293.15
     - type: Jetpack
       moleUsage: 0.00085
@@ -47,7 +47,7 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ DiagnosticVisorMod ]
-    examineText: gun-upgrade-examine-text-damage
+    examineText: suit-mod-diagnostic-visor
   - type: SuitModHelmet
     componentsToAdd:
     - type: ShowHealthIcons

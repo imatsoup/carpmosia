@@ -15,7 +15,7 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ AxeSlotMod ]
-    examineText: gun-upgrade-examine-text-damage
+    examineText: suit-mod-axe-slot
   - type: SuitModSlot
     keys: [ AxeSlot ]
     whitelists:
@@ -42,7 +42,7 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ WeldingVisorMod ]
-    examineText: gun-upgrade-examine-text-damage
+    examineText: suit-mod-welding-visor
   - type: SuitModHelmet
     componentsToAdd:
     - type: EyeProtection
@@ -68,7 +68,7 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ ThermalVisorMod ]
-    examineText: gun-upgrade-examine-text-damage
+    examineText: suit-mod-thermal-visor
   - type: SuitModHelmet
     componentsToAdd:
     - type: ThermalSight

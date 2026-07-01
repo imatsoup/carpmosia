@@ -68,7 +68,7 @@ public sealed partial class SuitModSystem : EntitySystem
     {
         using (args.PushGroup(nameof(ModdableSuitComponent)))
         {
-            args.PushMarkup("This suit supports a maximum of " + ent.Comp.MaxUpgradeCount + " suit mods.");
+            args.PushMarkup(Loc.GetString("moddable-suit-description", ("count", ent.Comp.MaxUpgradeCount)));
             foreach (var upgrade in GetCurrentUpgrades(ent))
             {
                 args.PushMarkup(Loc.GetString(upgrade.Comp.ExamineText));
@@ -149,9 +149,6 @@ public sealed partial class SuitModSystem : EntitySystem
         {
             if (!_container.CanRemove(item, container))
                 continue;
-
-            // if (!_actionBlockerSystem.CanPickup(args.User, slot.Item!.Value))
-            //     continue;
 
             var verbSubject = "Eject Upgrade";
 

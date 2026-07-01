@@ -15,7 +15,7 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ MedicalVisorMod ]
-    examineText: gun-upgrade-examine-text-damage
+    examineText: suit-mod-medhud
   - type: SuitModHelmet
     componentsToAdd:
     - type: ShowHealthBars

@@ -1,3 +1,36 @@
+
+## Abilities
+- type: entity
+  id: SuitModJetpack
+  parent: BaseSuitMod
+  name: Hardsuit modkit (EJP)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ JetpackMod ]
+    examineText: suit-mod-jetpack
+  - type: SuitModBody
+    componentsToAdd:
+    - type: GasTank
+      releasePressure: 21.3
+      air:
+        volume: 0.2
+        temperature: 293.15
+    - type: Jetpack
+      moleUsage: 0.00085
+  - type: Tag
+    tags:
+    - EngineeringMod
+    - SecurityMod
+
 ## Item storage slots
 - type: entity
   id: SuitModCrusherSlot
@@ -15,7 +48,7 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ CrusherSlotMod ]
-    examineText: gun-upgrade-examine-text-damage
+    examineText: suit-mod-crusher-slot
   - type: SuitModSlot
     keys: [ crusher-slot ]
     whitelists:

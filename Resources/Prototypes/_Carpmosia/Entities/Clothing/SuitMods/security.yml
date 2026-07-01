@@ -15,7 +15,7 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ LongarmSlotMod ]
-    examineText: gun-upgrade-examine-text-damage
+    examineText: suit-mod-longarm-slot
   - type: SuitModSlot
     keys: [ longarm-slot ]
     whitelists:
@@ -25,4 +25,33 @@
         - SMG
   - type: Tag
     tags:
-    - CargoMod
+    - SecurityMod
+
+## Visor mods
+- type: entity
+  id: SuitModSecVisor
+  parent: BaseSuitMod
+  name: Hardsuit modkit (sec hud)
+  components:
+  - type: Sprite
+    layers:
+    - state: base
+    - state: overlay-1
+      color: "#ec9b2d"
+    - state: overlay-2
+      color: "#a71010"
+    - state: overlay-3
+      color: "#eb4c13"
+  - type: SuitMod
+    tags: [ SecurityVisorMod ]
+    examineText: suit-mod-sechud
+  - type: SuitModHelmet
+    componentsToAdd:
+    - type: ShowJobIcons
+    - type: ShowMindShieldIcons
+    - type: ShowCriminalRecordIcons
+    - type: ShowContrabandDetails
+  - type: Tag
+    tags:
+    - SecurityMod
+    - HudSecurity
