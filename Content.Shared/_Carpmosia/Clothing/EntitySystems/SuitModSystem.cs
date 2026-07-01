@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using Content.Shared.Actions;
+using Content.Shared.Actions.Components;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Armor;
@@ -32,6 +34,7 @@ public sealed partial class SuitModSystem : EntitySystem
     [Dependency] private EntityWhitelistSystem _entityWhitelist = default!;
     [Dependency] private ISharedAdminLogManager _adminLog = default!;
     [Dependency] private ItemSlotsSystem _itemSlotsSystem = default!;
+    [Dependency] private SharedActionsSystem _actions = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private SharedContainerSystem _container = default!;
     [Dependency] private SharedHandsSystem _hands = default!;
@@ -48,6 +51,8 @@ public sealed partial class SuitModSystem : EntitySystem
 
         SubscribeLocalEvent<SuitModBodyComponent, SuitRefreshModifiersEvent>(OnAddComponentsMod);
         SubscribeLocalEvent<SuitModHelmetComponent, SuitRefreshModifiersEvent>(OnHelmetMod);
+        SubscribeLocalEvent<SuitModActionComponent, ClothingGotEquippedEvent>(OnAddActionsMod);
+        SubscribeLocalEvent<SuitModActionComponent, ClothingGotUnequippedEvent>(OnModdedUnequip);
         SubscribeLocalEvent<SuitModSlotComponent, SuitRefreshModifiersEvent>(OnSlotMod);
 
 
@@ -197,6 +202,32 @@ public sealed partial class SuitModSystem : EntitySystem
             EntityManager.AddComponents(toggle.ClothingUid.Value, ent.Comp.ComponentsToAdd);
         else
             EntityManager.RemoveComponents(toggle.ClothingUid.Value, ent.Comp.ComponentsToAdd);
+    }
+
+    public void OnAddActionsMod(Entity<SuitModActionComponent> ent, ref ClothingGotEquippedEvent args)
+    {
+        if (ent.Comp.ActionEntities == null)
+            return;
+
+        foreach (var action in ent.Comp.Actions)
+        {
+            EntityUid? actionEnt = null;
+            _actions.AddAction(args.Wearer, ref actionEnt, action);
+
+            if (actionEnt != null)
+                ent.Comp.ActionEntities.Add(actionEnt.Value);
+        }
+    }
+
+    public void OnModdedUnequip(Entity<SuitModActionComponent> ent, ref ClothingGotUnequippedEvent args)
+    {
+        if (ent.Comp.ActionEntities == null)
+            return;
+
+        foreach (var action in ent.Comp.ActionEntities)
+        {
+            _actions.RemoveAction(action);
+        }
     }
 
     public void OnSlotMod(Entity<SuitModSlotComponent> ent, ref SuitRefreshModifiersEvent args)

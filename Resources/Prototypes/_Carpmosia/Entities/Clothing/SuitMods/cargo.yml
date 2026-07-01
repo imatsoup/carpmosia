@@ -1,7 +1,7 @@
 
 ## Abilities
 - type: entity
-  id: SuitModJetpack
+  id: SuitModGrappleHook
   parent: BaseSuitMod
   name: Hardsuit modkit (EJP)
   components:
@@ -15,21 +15,23 @@
     - state: overlay-3
       color: "#eb4c13"
   - type: SuitMod
-    tags: [ JetpackMod ]
+    tags: [ GrappleHookMod ]
     examineText: suit-mod-jetpack
   - type: SuitModBody
     componentsToAdd:
-    - type: GasTank
-      releasePressure: 21.3
-      air:
-        volume: 0.2
-        temperature: 293.15
-    - type: Jetpack
-      moleUsage: 0.00085
+    - type: ActionGrant
+      actions:
+      - ActionGrappleHook
+    - type: ItemActionGrant
+      actions:
+      - ActionGrappleHook
+      activeIfWorn: true
+    - type: ActionGun
+      action: ActionGrappleHook
+      gunProto: GrappleGunMod
   - type: Tag
     tags:
-    - EngineeringMod
-    - SecurityMod
+    - CargoMod
 
 ## Item storage slots
 - type: entity
