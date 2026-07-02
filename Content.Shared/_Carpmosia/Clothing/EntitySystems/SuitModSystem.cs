@@ -14,8 +14,10 @@ using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Emag.Systems;
 using Content.Shared.Examine;
 using Content.Shared.Interaction;
+using Content.Shared.Interaction.Events;
 using Content.Shared.Popups;
 using Content.Shared.Inventory;
+using Content.Shared.Inventory.Events;
 using Content.Shared.Tag;
 using Content.Shared.Verbs;
 using Content.Shared.Whitelist;
@@ -51,10 +53,12 @@ public sealed partial class SuitModSystem : EntitySystem
 
         SubscribeLocalEvent<SuitModBodyComponent, SuitRefreshModifiersEvent>(OnAddComponentsMod);
         SubscribeLocalEvent<SuitModHelmetComponent, SuitRefreshModifiersEvent>(OnHelmetMod);
-        SubscribeLocalEvent<SuitModActionComponent, ClothingGotEquippedEvent>(OnAddActionsMod);
-        SubscribeLocalEvent<SuitModActionComponent, ClothingGotUnequippedEvent>(OnModdedUnequip);
         SubscribeLocalEvent<SuitModSlotComponent, SuitRefreshModifiersEvent>(OnSlotMod);
 
+        SubscribeLocalEvent<SuitModEquipmentToggleComponent, SuitModEquipmentActionEvent>(OnAddEquipmentModToggleAction);
+        SubscribeLocalEvent<SuitModProvidedEquipmentComponent, DroppedEvent>(OnModProvidedEquipmentDropped);
+
+        SubscribeLocalEvent<ModdableSuitComponent, GotUnequippedEvent>(OnSuitUnequipped);
 
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<InteractionVerb>>(AddInsertVerb);
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<AlternativeVerb>>(AddEjectVerb);
@@ -204,32 +208,6 @@ public sealed partial class SuitModSystem : EntitySystem
             EntityManager.RemoveComponents(toggle.ClothingUid.Value, ent.Comp.ComponentsToAdd);
     }
 
-    public void OnAddActionsMod(Entity<SuitModActionComponent> ent, ref ClothingGotEquippedEvent args)
-    {
-        if (ent.Comp.ActionEntities == null)
-            return;
-
-        foreach (var action in ent.Comp.Actions)
-        {
-            EntityUid? actionEnt = null;
-            _actions.AddAction(args.Wearer, ref actionEnt, action);
-
-            if (actionEnt != null)
-                ent.Comp.ActionEntities.Add(actionEnt.Value);
-        }
-    }
-
-    public void OnModdedUnequip(Entity<SuitModActionComponent> ent, ref ClothingGotUnequippedEvent args)
-    {
-        if (ent.Comp.ActionEntities == null)
-            return;
-
-        foreach (var action in ent.Comp.ActionEntities)
-        {
-            _actions.RemoveAction(action);
-        }
-    }
-
     public void OnSlotMod(Entity<SuitModSlotComponent> ent, ref SuitRefreshModifiersEvent args)
     {
         var i = 0;
@@ -262,6 +240,48 @@ public sealed partial class SuitModSystem : EntitySystem
                 _itemSlotsSystem.RemoveItemSlot(args.Suit, slot);
             }
         }
+    }
+
+    public void OnAddEquipmentModToggleAction(Entity<SuitModEquipmentToggleComponent> ent, ref SuitModEquipmentActionEvent args)
+    {
+        if (ent.Comp.Equipment != null)
+        {
+            var ev = new DroppedEvent(
+                args.Performer
+            );
+
+            RaiseLocalEvent(ent.Comp.Equipment.Value, ev);
+        }
+        if ( _hands.GetEmptyHandCount(args.Performer) < ent.Comp.RequiredHands && ent.Comp.SpawnedPrototype != null)
+            return;
+
+        if (ent.Comp.SpawnedPrototype == null)
+            return;
+
+        var item = Spawn(ent.Comp.SpawnedPrototype.Value);
+
+        ent.Comp.Equipment = item;
+        _hands.TryPickupAnyHand(args.Performer, item);
+    }
+
+    public void OnModProvidedEquipmentDropped(Entity<SuitModProvidedEquipmentComponent> ent, ref DroppedEvent args)
+    {
+        if (!ent.Comp.DelteOnDrop || args.Handled)
+            return;
+
+        QueueDel(ent);
+
+        args.Handled = true;
+    }
+
+    public void OnSuitUnequipped(Entity<ModdableSuitComponent> ent, ref GotUnequippedEvent args)
+    {
+        foreach (var upgrade in GetCurrentUpgrades(ent))
+        {
+            if (TryComp<SuitModEquipmentToggleComponent>(upgrade, out var equip) && equip.Equipment != null)
+                QueueDel(equip.Equipment.Value);
+        }
+
     }
 
     /// <summary>

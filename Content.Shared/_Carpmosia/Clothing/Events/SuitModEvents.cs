@@ -1,3 +1,4 @@
+using Content.Shared.Actions;
 using Content.Shared.Clothing.Components;
 
 namespace Content.Shared.Clothing.Events;
@@ -10,3 +11,8 @@ public record struct SuitRefreshModifiersEvent(
     EntityUid User,
     bool IsInserting
 );
+
+public sealed partial class SuitModEquipmentActionEvent : InstantActionEvent
+{
+
+}

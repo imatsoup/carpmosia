@@ -21,14 +21,14 @@
     componentsToAdd:
     - type: ActionGrant
       actions:
-      - ActionGrappleHook
+      - ActionDeployEquipment
     - type: ItemActionGrant
       actions:
-      - ActionGrappleHook
+      - ActionDeployEquipment
       activeIfWorn: true
-    - type: ActionGun
-      action: ActionGrappleHook
-      gunProto: GrappleGunMod
+    - type: SuitModEquipmentToggle
+      action: ActionDeployEquipment
+      spawnedPrototype: ModMiningDrill
   - type: Tag
     tags:
     - CargoMod

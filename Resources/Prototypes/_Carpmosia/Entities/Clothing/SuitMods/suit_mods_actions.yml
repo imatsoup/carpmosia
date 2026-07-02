@@ -1,0 +1,19 @@
+- type: entity
+  parent: BaseAction
+  id: ActionDeployEquipment
+  name: "[color=orange]Toggle Equipment[/color]"
+  description: Deploy equipment provided by suit mods.
+  components:
+  - type: Action
+    # TODO: actual sprite and iconOn
+    icon: { sprite : Objects/Weapons/Guns/Projectiles/magic.rsi, state: fireball }
+    itemIconStyle: BigAction
+    priority: 2
+  - type: InstantAction
+    event: !type:SuitModEquipmentActionEvent
+
+- type: entity
+  parent: MiningDrill
+  id: ModMiningDrill
+  components:
+  - type: SuitModProvidedEquipment

@@ -53,7 +53,7 @@
     - EngineeringMod
 
 - type: entity
-  id: SuitModThermalVisor
+  id: SuitModThermalVisor # Maybe someone will actually fucking bother with it
   parent: BaseSuitMod
   name: Hardsuit modkit (thermal hud)
   components:
