@@ -251,6 +251,8 @@ public sealed partial class SuitModSystem : EntitySystem
             );
 
             RaiseLocalEvent(ent.Comp.Equipment.Value, ev);
+
+            return;
         }
         if ( _hands.GetEmptyHandCount(args.Performer) < ent.Comp.RequiredHands && ent.Comp.SpawnedPrototype != null)
             return;
