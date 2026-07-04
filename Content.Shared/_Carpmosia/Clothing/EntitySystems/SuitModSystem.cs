@@ -14,6 +14,7 @@ using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Emag.Systems;
 using Content.Shared.Examine;
 using Content.Shared.Interaction;
+using Content.Shared.Interaction.Components;
 using Content.Shared.Interaction.Events;
 using Content.Shared.Popups;
 using Content.Shared.Inventory;
@@ -55,10 +56,10 @@ public sealed partial class SuitModSystem : EntitySystem
         SubscribeLocalEvent<SuitModHelmetComponent, SuitRefreshModifiersEvent>(OnHelmetMod);
         SubscribeLocalEvent<SuitModSlotComponent, SuitRefreshModifiersEvent>(OnSlotMod);
 
+        SubscribeLocalEvent<SuitModEquipmentToggleComponent, ComponentInit>(OnDeployableGearModInit);
         SubscribeLocalEvent<SuitModEquipmentToggleComponent, SuitModEquipmentActionEvent>(OnAddEquipmentModToggleAction);
-        SubscribeLocalEvent<SuitModProvidedEquipmentComponent, DroppedEvent>(OnModProvidedEquipmentDropped);
 
-        SubscribeLocalEvent<ModdableSuitComponent, GotUnequippedEvent>(OnSuitUnequipped);
+        SubscribeLocalEvent<ModdableSuitComponent, DroppedEvent>(OnSuitUnequipped);
 
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<InteractionVerb>>(AddInsertVerb);
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<AlternativeVerb>>(AddEjectVerb);
@@ -88,6 +89,19 @@ public sealed partial class SuitModSystem : EntitySystem
     private void OnInit(Entity<ModdableSuitComponent> ent, ref ComponentInit args)
     {
         _container.EnsureContainer<Container>(ent, ent.Comp.UpgradesContainerId);
+    }
+
+    private void OnDeployableGearModInit(Entity<SuitModEquipmentToggleComponent> ent, ref ComponentInit args)
+    {
+        var container = _container.EnsureContainer<Container>(ent, ent.Comp.ContainerId);
+
+        if (ent.Comp.SpawnedPrototype == null)
+            return;
+
+        var item = Spawn(ent.Comp.SpawnedPrototype.Value);
+        _container.Insert(item, container);
+        ent.Comp.Equipment = item;
+
     }
 
     private void AddInsertVerb(Entity<ModdableSuitComponent> ent, ref GetVerbsEvent<InteractionVerb> args)
@@ -244,46 +258,40 @@ public sealed partial class SuitModSystem : EntitySystem
 
     public void OnAddEquipmentModToggleAction(Entity<SuitModEquipmentToggleComponent> ent, ref SuitModEquipmentActionEvent args)
     {
-        if (ent.Comp.Equipment != null)
-        {
-            var ev = new DroppedEvent(
-                args.Performer
-            );
-
-            RaiseLocalEvent(ent.Comp.Equipment.Value, ev);
-
-            return;
-        }
         if ( _hands.GetEmptyHandCount(args.Performer) < ent.Comp.RequiredHands && ent.Comp.SpawnedPrototype != null)
             return;
 
-        if (ent.Comp.SpawnedPrototype == null)
+        if (!_container.TryGetContainer(ent, ent.Comp.ContainerId, out var container))
             return;
 
-        var item = Spawn(ent.Comp.SpawnedPrototype.Value);
-
-        ent.Comp.Equipment = item;
-        _hands.TryPickupAnyHand(args.Performer, item);
-    }
-
-    public void OnModProvidedEquipmentDropped(Entity<SuitModProvidedEquipmentComponent> ent, ref DroppedEvent args)
-    {
-        if (!ent.Comp.DelteOnDrop || args.Handled)
+        if (ent.Comp.Equipment == null)
             return;
 
-        QueueDel(ent);
-
-        args.Handled = true;
+        if (!ent.Comp.Deployed)
+        {
+            _hands.TryPickupAnyHand(args.Performer, ent.Comp.Equipment.Value);
+            ent.Comp.Deployed = true;
+            EnsureComp<UnremoveableComponent>(ent.Comp.Equipment.Value);
+        }
+        else
+        {
+            RemComp<UnremoveableComponent>(ent.Comp.Equipment.Value);
+            _container.Insert(ent.Comp.Equipment.Value, container);
+            ent.Comp.Deployed = false;
+        }
     }
 
-    public void OnSuitUnequipped(Entity<ModdableSuitComponent> ent, ref GotUnequippedEvent args)
+    public void OnSuitUnequipped(Entity<ModdableSuitComponent> ent, ref DroppedEvent args)
     {
         foreach (var upgrade in GetCurrentUpgrades(ent))
         {
             if (TryComp<SuitModEquipmentToggleComponent>(upgrade, out var equip) && equip.Equipment != null)
-                QueueDel(equip.Equipment.Value);
+                if(!_container.TryGetContainer(ent, equip.ContainerId, out var container) && container != null)
+                {
+                    RemComp<UnremoveableComponent>(equip.Equipment.Value);
+                    _container.Insert(equip.Equipment.Value, container);
+                }
         }
-
     }
 
     /// <summary>

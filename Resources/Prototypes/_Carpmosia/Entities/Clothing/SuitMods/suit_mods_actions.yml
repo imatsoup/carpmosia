@@ -13,7 +13,7 @@
     event: !type:SuitModEquipmentActionEvent
 
 - type: entity
-  parent: MiningDrill
-  id: ModMiningDrill
+  parent: WeaponGrapplingGun
+  id: ModGrapplingGun
   components:
   - type: SuitModProvidedEquipment

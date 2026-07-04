@@ -3,7 +3,7 @@
 - type: entity
   id: SuitModGrappleHook
   parent: BaseSuitMod
-  name: Hardsuit modkit (EJP)
+  name: Hardsuit modkit (Grapple)
   components:
   - type: Sprite
     layers:
@@ -28,7 +28,7 @@
       activeIfWorn: true
     - type: SuitModEquipmentToggle
       action: ActionDeployEquipment
-      spawnedPrototype: ModMiningDrill
+      spawnedPrototype: ModGrapplingGun
   - type: Tag
     tags:
     - CargoMod

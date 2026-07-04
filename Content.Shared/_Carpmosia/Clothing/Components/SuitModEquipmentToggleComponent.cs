@@ -13,6 +13,12 @@ public sealed partial class SuitModEquipmentToggleComponent : Component
 {
 
     /// <summary>
+    /// ID of container that holds deployable equipment.
+    /// </summary>
+    [DataField]
+    public string ContainerId = "Deployables";
+
+    /// <summary>
     /// The action prototype for deploying equipment.
     /// </summary>
     [DataField]
@@ -29,11 +35,21 @@ public sealed partial class SuitModEquipmentToggleComponent : Component
     public EntityUid? ActionEntity;
 
     /// <summary>
-    ///  Entity after prototy has spawned, used to QueueDel
+    /// The equipment associated with this mod
     /// </summary>
     [DataField]
     public EntityUid? Equipment;
 
+    /// <summary>
+    ///  Whether the equipment has been deployed or not.
+    /// </summary>
+    [DataField]
+    public bool Deployed = false;
+
+
+    /// <summary>
+    ///  Free hands needed to deploy the equipment
+    /// </summary>
     [DataField]
     public float RequiredHands = 1f;
 
