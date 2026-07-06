@@ -41,7 +41,7 @@ public sealed partial class SuitModSystem : EntitySystem
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private SharedContainerSystem _container = default!;
     [Dependency] private SharedHandsSystem _hands = default!;
-    [Dependency] private SharedPopupSystem _popup = default!;
+    [Dependency] private SharedPopupSystem _popupSystem = default!;
     [Dependency] private SharedTransformSystem _transform = default!;
 
     /// <inheritdoc/>
@@ -258,7 +258,7 @@ public sealed partial class SuitModSystem : EntitySystem
 
     public void OnAddEquipmentModToggleAction(Entity<SuitModEquipmentToggleComponent> ent, ref SuitModEquipmentActionEvent args)
     {
-        if ( _hands.GetEmptyHandCount(args.Performer) < ent.Comp.RequiredHands && ent.Comp.SpawnedPrototype != null)
+        if (args.Handled)
             return;
 
         if (!_container.TryGetContainer(ent, ent.Comp.ContainerId, out var container))
@@ -269,6 +269,12 @@ public sealed partial class SuitModSystem : EntitySystem
 
         if (!ent.Comp.Deployed)
         {
+            if ( _hands.GetEmptyHandCount(args.Performer) < ent.Comp.RequiredHands)
+            {
+                _popupSystem.PopupPredicted(Loc.GetString("wieldable-component-not-enough-free-hands",
+                ("number", ent.Comp.RequiredHands), ("item", ent.Comp.Equipment.Value)), ent.Comp.Equipment.Value, args.Performer);
+                return;
+            }
             _hands.TryPickupAnyHand(args.Performer, ent.Comp.Equipment.Value);
             ent.Comp.Deployed = true;
             EnsureComp<UnremoveableComponent>(ent.Comp.Equipment.Value);
@@ -278,20 +284,30 @@ public sealed partial class SuitModSystem : EntitySystem
             RemComp<UnremoveableComponent>(ent.Comp.Equipment.Value);
             _container.Insert(ent.Comp.Equipment.Value, container);
             ent.Comp.Deployed = false;
+            DirtyEntity(ent.Comp.Equipment.Value);
         }
+
+        args.Handled = true;
     }
 
     public void OnSuitUnequipped(Entity<ModdableSuitComponent> ent, ref DroppedEvent args)
     {
+        if (args.Handled)
+            return;
+
         foreach (var upgrade in GetCurrentUpgrades(ent))
         {
             if (TryComp<SuitModEquipmentToggleComponent>(upgrade, out var equip) && equip.Equipment != null)
-                if(!_container.TryGetContainer(ent, equip.ContainerId, out var container) && container != null)
+                if(_container.TryGetContainer(ent, equip.ContainerId, out var container) && container != null)
                 {
                     RemComp<UnremoveableComponent>(equip.Equipment.Value);
                     _container.Insert(equip.Equipment.Value, container);
+                    equip.Deployed = false;
+                    DirtyEntity(equip.Equipment.Value);
                 }
         }
+
+        args.Handled = true;
     }
 
     /// <summary>
