@@ -12,3 +12,4 @@ suit-mod-welding-visor = This suit is modded with a [bold]welding visor[/bold]!
 suit-mod-diagnostic-visor = This suit is modded with a [bold]diagonostic visor[/bold]!
 suit-mod-thermal-visor = This suit is modded with a [bold]thermal visor[/bold]!
 
+suit-mod-grapple = This suit is modded with a [bold]deployable grapple gun[/bold].

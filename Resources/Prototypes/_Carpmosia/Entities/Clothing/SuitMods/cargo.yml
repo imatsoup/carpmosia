@@ -16,7 +16,7 @@
       color: "#eb4c13"
   - type: SuitMod
     tags: [ GrappleHookMod ]
-    examineText: suit-mod-jetpack
+    examineText: suit-mod-grapple
   - type: SuitModBody
     componentsToAdd:
     - type: ActionGrant

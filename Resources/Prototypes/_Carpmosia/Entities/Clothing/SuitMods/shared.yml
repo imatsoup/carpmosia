@@ -27,6 +27,7 @@
       moleUsage: 0.00085
   - type: Tag
     tags:
+    - CargoMod
     - EngineeringMod
     - SecurityMod
 
@@ -58,5 +59,6 @@
   - type: Tag
     tags:
     - HudDiagnostic
+    - CargoMod
     - EngineeringMod
     - ScienceMod
