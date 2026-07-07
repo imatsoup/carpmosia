@@ -29,9 +29,11 @@ using Robust.Shared.Prototypes;
 
 namespace Content.Shared.Clothing.EntitySystems;
 
+/// <summary>
+/// Handles the entirity of logic for moddable suits and suit modkits (upgrades)
+/// </summary>
 public sealed partial class SuitModSystem : EntitySystem
 {
-
     [Dependency] private ActionBlockerSystem _actionBlocker = default!;
     [Dependency] private ClothingSystem _clothing = default!;
     [Dependency] private EntityWhitelistSystem _entityWhitelist = default!;
@@ -57,15 +59,20 @@ public sealed partial class SuitModSystem : EntitySystem
         SubscribeLocalEvent<SuitModSlotComponent, SuitRefreshModifiersEvent>(OnSlotMod);
 
         SubscribeLocalEvent<SuitModEquipmentToggleComponent, ComponentInit>(OnDeployableGearModInit);
+        SubscribeLocalEvent<SuitModEquipmentToggleComponent, ComponentShutdown>(OnDeployableGearModShutdown);
         SubscribeLocalEvent<SuitModEquipmentToggleComponent, SuitModEquipmentActionEvent>(OnAddEquipmentModToggleAction);
 
-        SubscribeLocalEvent<ModdableSuitComponent, DroppedEvent>(OnSuitUnequipped);
+        SubscribeLocalEvent<ModdableSuitComponent, GotUnequippedEvent>(OnSuitUnequipped);
 
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<InteractionVerb>>(AddInsertVerb);
         SubscribeLocalEvent<ModdableSuitComponent, GetVerbsEvent<AlternativeVerb>>(AddEjectVerb);
 
     }
 
+    /// <summary>
+    /// Event relay for modkit system.
+    /// Call the appropriate function based on the Modkit component.
+    /// </summary>
     private void RelayEvent<T>(Entity<ModdableSuitComponent> ent, ref T args) where T : notnull
     {
         foreach (var upgrade in GetCurrentUpgrades(ent))
@@ -91,6 +98,9 @@ public sealed partial class SuitModSystem : EntitySystem
         _container.EnsureContainer<Container>(ent, ent.Comp.UpgradesContainerId);
     }
 
+    /// <summary>
+    /// Handles what to do when the deployable equipment modkit component initializes
+    /// </summary>
     private void OnDeployableGearModInit(Entity<SuitModEquipmentToggleComponent> ent, ref ComponentInit args)
     {
         var container = _container.EnsureContainer<Container>(ent, ent.Comp.ContainerId);
@@ -98,31 +108,53 @@ public sealed partial class SuitModSystem : EntitySystem
         if (ent.Comp.SpawnedPrototype == null)
             return;
 
+        // Spawn the equipment, then insert into into its own special storage.
         var item = Spawn(ent.Comp.SpawnedPrototype.Value);
         _container.Insert(item, container);
         ent.Comp.Equipment = item;
 
     }
 
-    private void AddInsertVerb(Entity<ModdableSuitComponent> ent, ref GetVerbsEvent<InteractionVerb> args)
+    /// <summary>
+    /// Handles the deployable modkit component shutdown.
+    /// Needed to avoid mysterious client-sided clones.
+    /// </summary>
+    private void OnDeployableGearModShutdown(Entity<SuitModEquipmentToggleComponent> ent, ref ComponentShutdown args)
     {
-        if (!args.CanAccess || !args.CanInteract || args.Hands == null || args.Using == null
-        || !TryComp<SuitModComponent>(args.Using, out var mod) || GetCurrentUpgrades(ent).Count >= ent.Comp.MaxUpgradeCount
-        || GetCurrentUpgradeTags(ent).ToHashSet().IsSupersetOf(mod.Tags)
-        || _entityWhitelist.IsWhitelistFail(ent.Comp.Whitelist, args.Using.Value)
-        || !_actionBlocker.CanDrop(args.User)
-        )
+        var container = _container.EnsureContainer<Container>(ent, ent.Comp.ContainerId);
+
+        // If the equipment exists, delete it.
+        if (ent.Comp.Equipment == null)
             return;
 
-        // Check if its currently equipped
+        QueueDel(ent.Comp.Equipment);
+    }
+
+    /// <summary>
+    /// Adds interaction verbs for inserting a modkit into a hardsuit.
+    /// </summary>
+    private void AddInsertVerb(Entity<ModdableSuitComponent> ent, ref GetVerbsEvent<InteractionVerb> args)
+    {
+        // Can the user properly interact with it? Does it even exist?
+        if (!args.CanAccess || !args.CanInteract || args.Hands == null || args.Using == null || !_actionBlocker.CanDrop(args.User))
+            return;
+
+        // Check we don't already have one installed and we're not at our limit.
+        if (!TryComp<SuitModComponent>(args.Using, out var mod) || GetCurrentUpgrades(ent).Count >= ent.Comp.MaxUpgradeCount
+        || GetCurrentUpgradeTags(ent).ToHashSet().IsSupersetOf(mod.Tags))
+            return;
+
+        // Check to see if the modkit is whitelisted to "fit" in the suit
+        if (_entityWhitelist.IsWhitelistFail(ent.Comp.Whitelist, args.Using.Value))
+            return;
+
+        // Check if our suit is currently equipped, if so, block the verb.
         if (TryComp<ClothingComponent>(ent, out var clothing) && clothing.InSlot == "outerClothing")
             return;
 
         var container = _container.GetContainer(ent, ent.Comp.UpgradesContainerId);
 
-        if (!_actionBlocker.CanDrop(args.User))
-            return;
-
+        // If the upgrade container doesn't exist, don't show the insert verb.
         if (container == null)
             return;
 
@@ -130,6 +162,7 @@ public sealed partial class SuitModSystem : EntitySystem
 
         var user = args.User;
 
+        // Add the insert item verb
         if (_container.CanInsert(args.Using.Value, container))
         {
             InteractionVerb insertVerb = new()
@@ -147,21 +180,23 @@ public sealed partial class SuitModSystem : EntitySystem
         }
     }
 
+    /// <summary>
+    /// Adds alternative verb for ejecting modkits from a modded suit.
+    /// </summary>
     private void AddEjectVerb(Entity<ModdableSuitComponent> ent, ref GetVerbsEvent<AlternativeVerb> args)
     {
-        if (!args.CanAccess || !args.CanInteract || args.Hands == null)
+        // Can we interact with it properly?
+        if (!args.CanAccess || !args.CanInteract || args.Hands == null || !_actionBlocker.CanDrop(args.User))
             return;
 
         var container = _container.GetContainer(ent, ent.Comp.UpgradesContainerId);
 
-        if (!_actionBlocker.CanDrop(args.User))
-            return;
-
-        // Check if its currently equipped
+        // Check if its currently equipped, if so, block the verb
         if (TryComp<ClothingComponent>(ent, out var clothing) && clothing.InSlot == "outerClothing")
             return;
 
-        if (container== null)
+        // Check to see if our container exists.
+        if (container == null)
             return;
 
         var verbData = args;
@@ -193,17 +228,13 @@ public sealed partial class SuitModSystem : EntitySystem
         }
     }
 
-    private void RefreshArmorMods(Entity<ModdableSuitComponent> ent, EntityUid user, bool isInserting)
-    {
-
-        var ev = new SuitRefreshModifiersEvent(
-            ent,
-            user,
-            isInserting
-        );
-        RaiseLocalEvent(ent, ref ev);
-    }
-
+    /// <summary>
+    /// For use with mods that add bespoke components to a hardsuit.
+    /// If you need to add a visor or other mod that should only be active
+    /// with the helmet active, use OnHelmetMod.
+    /// </summary>
+    /// <param name="ent"></param>
+    /// <param name="args"></param>
     public void OnAddComponentsMod(Entity<SuitModBodyComponent> ent, ref SuitRefreshModifiersEvent args)
     {
         if (args.IsInserting)
@@ -212,6 +243,9 @@ public sealed partial class SuitModSystem : EntitySystem
             EntityManager.RemoveComponents(args.Suit, ent.Comp.ComponentsToAdd);
     }
 
+    /// <summary>
+    /// For mods that should only be active while the helmet is deployed.
+    /// </summary>
     public void OnHelmetMod(Entity<SuitModHelmetComponent> ent, ref SuitRefreshModifiersEvent args)
     {
         if (!TryComp<ToggleableClothingComponent>(args.Suit, out var toggle) || toggle.ClothingUid == null)
@@ -222,6 +256,9 @@ public sealed partial class SuitModSystem : EntitySystem
             EntityManager.RemoveComponents(toggle.ClothingUid.Value, ent.Comp.ComponentsToAdd);
     }
 
+    /// <summary>
+    /// For mods that add inventory slots to modded suits.
+    /// </summary>
     public void OnSlotMod(Entity<SuitModSlotComponent> ent, ref SuitRefreshModifiersEvent args)
     {
         var i = 0;
@@ -256,17 +293,24 @@ public sealed partial class SuitModSystem : EntitySystem
         }
     }
 
+    /// <summary>
+    /// Action event for deployable equipment. (Equipment that is part of the hardsuit mod deploys to your hands)
+    /// </summary>
     public void OnAddEquipmentModToggleAction(Entity<SuitModEquipmentToggleComponent> ent, ref SuitModEquipmentActionEvent args)
     {
+        // Check if we've already handled the event.
         if (args.Handled)
             return;
 
+        // Try to get the deployable equipment container
         if (!_container.TryGetContainer(ent, ent.Comp.ContainerId, out var container))
             return;
 
+        // Check that the deployable exists
         if (ent.Comp.Equipment == null)
             return;
 
+        // If the equipment isn't deployed, deploy it. If it is, put it back in its container
         if (!ent.Comp.Deployed)
         {
             if ( _hands.GetEmptyHandCount(args.Performer) < ent.Comp.RequiredHands)
@@ -290,24 +334,35 @@ public sealed partial class SuitModSystem : EntitySystem
         args.Handled = true;
     }
 
-    public void OnSuitUnequipped(Entity<ModdableSuitComponent> ent, ref DroppedEvent args)
+    /// <summary>
+    /// Cleans up after SuitModEquipmentToggleComponent.
+    /// </summary>
+    public void OnSuitUnequipped(Entity<ModdableSuitComponent> ent, ref GotUnequippedEvent args)
     {
-        if (args.Handled)
-            return;
-
-        foreach (var upgrade in GetCurrentUpgrades(ent))
+        if (TryComp<SuitModEquipmentToggleComponent>(ent.Owner, out var comp)
+            && comp.Equipment != null && comp.Deployed
+            && _container.TryGetContainer(ent, comp.ContainerId, out var container))
         {
-            if (TryComp<SuitModEquipmentToggleComponent>(upgrade, out var equip) && equip.Equipment != null)
-                if(_container.TryGetContainer(ent, equip.ContainerId, out var container) && container != null)
-                {
-                    RemComp<UnremoveableComponent>(equip.Equipment.Value);
-                    _container.Insert(equip.Equipment.Value, container);
-                    equip.Deployed = false;
-                    DirtyEntity(equip.Equipment.Value);
-                }
+            RemComp<UnremoveableComponent>(comp.Equipment.Value);
+            _container.Insert(comp.Equipment.Value, container);
+            comp.Deployed = false;
+            DirtyEntity(comp.Equipment.Value);
         }
+    }
 
-        args.Handled = true;
+    /// <summary>
+    /// Method that activates all the mods via event relay.
+    /// </summary>
+    /// <param name="user">The individual interacting with the modkit</param>
+    /// <param name="isInserting">Are we inserting or removing the modkit?</param>
+    private void RefreshArmorMods(Entity<ModdableSuitComponent> ent, EntityUid user, bool isInserting)
+    {
+        var ev = new SuitRefreshModifiersEvent(
+            ent,
+            user,
+            isInserting
+        );
+        RaiseLocalEvent(ent, ref ev);
     }
 
     /// <summary>
