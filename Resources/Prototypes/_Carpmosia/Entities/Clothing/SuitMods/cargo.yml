@@ -1,9 +1,10 @@
-
-## Abilities
+# Base Mod (for contraband)
 - type: entity
-  id: SuitModGrappleHook
+  id: BaseCargoSuitMod
   parent: BaseSuitMod
-  name: Hardsuit modkit (Grapple)
+  name: suit modkit
+  description: A modkit for a standard salvage hardsuit.
+  abstract: true
   components:
   - type: Sprite
     layers:
@@ -14,6 +15,16 @@
       color: "#a71010"
     - state: overlay-3
       color: "#eb4c13"
+  - type: Tag
+    tags:
+    - CargoMod
+
+## Abilities
+- type: entity
+  id: SuitModGrappleHook
+  parent: BaseCargoSuitMod
+  name: Hardsuit modkit (Grapple)
+  components:
   - type: SuitMod
     tags: [ GrappleHookMod ]
     examineText: suit-mod-grapple
@@ -29,25 +40,13 @@
     - type: SuitModEquipmentToggle
       action: ActionDeployEquipment
       spawnedPrototype: ModGrapplingGun
-  - type: Tag
-    tags:
-    - CargoMod
 
 ## Item storage slots
 - type: entity
   id: SuitModCrusherSlot
-  parent: BaseSuitMod
+  parent: BaseCargoSuitMod
   name: Hardsuit modkit (crusher-slot)
   components:
-  - type: Sprite
-    layers:
-    - state: base
-    - state: overlay-1
-      color: "#ec9b2d"
-    - state: overlay-2
-      color: "#a71010"
-    - state: overlay-3
-      color: "#eb4c13"
   - type: SuitMod
     tags: [ CrusherSlotMod ]
     examineText: suit-mod-crusher-slot
@@ -56,6 +55,3 @@
     whitelists:
       - tags:
         - Pickaxe
-  - type: Tag
-    tags:
-    - CargoMod

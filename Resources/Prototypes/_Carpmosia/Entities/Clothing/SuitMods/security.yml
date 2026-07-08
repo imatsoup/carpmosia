@@ -1,8 +1,10 @@
-# Item storage slot
+# Base Mod (for contraband)
 - type: entity
-  id: SuitModLongarmSlot
-  parent: BaseSuitMod
-  name: Hardsuit modkit (Longarm-slot)
+  id: BaseSecSuitMod
+  parent: [ BaseSuitMod, BaseSecurityContraband ]
+  name: suit modkit
+  description: A modkit for a standard security hardsuit.
+  abstract: true
   components:
   - type: Sprite
     layers:
@@ -13,6 +15,16 @@
       color: "#a71010"
     - state: overlay-3
       color: "#eb4c13"
+  - type: Tag
+    tags:
+    - SecurityMod
+
+# Item storage slot
+- type: entity
+  id: SuitModLongarmSlot
+  parent: BaseSecSuitMod
+  name: Hardsuit modkit (Longarm-slot)
+  components:
   - type: SuitMod
     tags: [ LongarmSlotMod ]
     examineText: suit-mod-longarm-slot
@@ -23,25 +35,13 @@
         - Shotgun
         - Rifle
         - SMG
-  - type: Tag
-    tags:
-    - SecurityMod
 
 ## Visor mods
 - type: entity
   id: SuitModSecVisor
-  parent: BaseSuitMod
+  parent: BaseSecSuitMod
   name: Hardsuit modkit (sec hud)
   components:
-  - type: Sprite
-    layers:
-    - state: base
-    - state: overlay-1
-      color: "#ec9b2d"
-    - state: overlay-2
-      color: "#a71010"
-    - state: overlay-3
-      color: "#eb4c13"
   - type: SuitMod
     tags: [ SecurityVisorMod ]
     examineText: suit-mod-sechud
@@ -51,7 +51,3 @@
     - type: ShowMindShieldIcons
     - type: ShowCriminalRecordIcons
     - type: ShowContrabandDetails
-  - type: Tag
-    tags:
-    - SecurityMod
-    - HudSecurity

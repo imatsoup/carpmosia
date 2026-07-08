@@ -1,8 +1,10 @@
-## Visor mods
+# Base Mod (for contraband)
 - type: entity
-  id: SuitModMedVisor
-  parent: BaseSuitMod
-  name: Hardsuit modkit (medical visor)
+  id: BaseMedSuitMod
+  parent: [ BaseSuitMod, BaseSecurityContraband ]
+  name: suit modkit
+  description: A modkit for a standard security hardsuit.
+  abstract: true
   components:
   - type: Sprite
     layers:
@@ -13,6 +15,16 @@
       color: "#a71010"
     - state: overlay-3
       color: "#eb4c13"
+  - type: Tag
+    tags:
+    - MedicalMod
+
+## Visor mods
+- type: entity
+  id: SuitModMedVisor
+  parent: BaseMedSuitMod
+  name: Hardsuit modkit (medical visor)
+  components:
   - type: SuitMod
     tags: [ MedicalVisorMod ]
     examineText: suit-mod-medhud
@@ -20,30 +32,15 @@
     componentsToAdd:
     - type: ShowHealthBars
     - type: ShowHealthIcons
-  - type: Tag
-    tags:
-    - MedicalMod
 
 - type: entity
   id: SuitModChemVisor
-  parent: BaseSuitMod
+  parent: BaseMedSuitMod
   name: Hardsuit modkit (chem visor)
   components:
-  - type: Sprite
-    layers:
-    - state: base
-    - state: overlay-1
-      color: "#ec9b2d"
-    - state: overlay-2
-      color: "#a71010"
-    - state: overlay-3
-      color: "#eb4c13"
   - type: SuitMod
     tags: [ ChemVisorMod ]
     examineText: suit-mod-medhud
   - type: SuitModHelmet
     componentsToAdd:
     - type: SolutionScanner
-  - type: Tag
-    tags:
-    - MedicalMod

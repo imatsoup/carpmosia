@@ -1,8 +1,10 @@
-## Item storage slots
+# Base Mod (for contraband)
 - type: entity
-  id: SuitModAxeSlot
-  parent: BaseSuitMod
-  name: Hardsuit modkit (axe-slot)
+  id: BaseEngiSuitMod
+  parent: [ BaseSuitMod, BaseSecurityContraband ]
+  name: suit modkit
+  description: A modkit for a standard security hardsuit.
+  abstract: true
   components:
   - type: Sprite
     layers:
@@ -13,6 +15,16 @@
       color: "#a71010"
     - state: overlay-3
       color: "#eb4c13"
+  - type: Tag
+    tags:
+    - EngineeringMod
+
+## Item storage slots
+- type: entity
+  id: SuitModAxeSlot
+  parent: BaseEngiSuitMod
+  name: Hardsuit modkit (axe-slot)
+  components:
   - type: SuitMod
     tags: [ AxeSlotMod ]
     examineText: suit-mod-axe-slot
@@ -21,25 +33,13 @@
     whitelists:
       - tags:
         - FireAxe
-  - type: Tag
-    tags:
-    - EngineeringMod
 
 ## Visor mods
 - type: entity
   id: SuitModWeldingVisor
-  parent: BaseSuitMod
+  parent: BaseEngiSuitMod
   name: Hardsuit modkit (welding visor)
   components:
-  - type: Sprite
-    layers:
-    - state: base
-    - state: overlay-1
-      color: "#ec9b2d"
-    - state: overlay-2
-      color: "#a71010"
-    - state: overlay-3
-      color: "#eb4c13"
   - type: SuitMod
     tags: [ WeldingVisorMod ]
     examineText: suit-mod-welding-visor
@@ -47,25 +47,12 @@
     componentsToAdd:
     - type: EyeProtection
     - type: FlashImmunity
-  - type: Tag
-    tags:
-    - WeldingMask
-    - EngineeringMod
 
 - type: entity
   id: SuitModThermalVisor # Maybe someone will actually fucking bother with it
-  parent: BaseSuitMod
+  parent: BaseEngiSuitMod
   name: Hardsuit modkit (thermal hud)
   components:
-  - type: Sprite
-    layers:
-    - state: base
-    - state: overlay-1
-      color: "#ec9b2d"
-    - state: overlay-2
-      color: "#a71010"
-    - state: overlay-3
-      color: "#eb4c13"
   - type: SuitMod
     tags: [ ThermalVisorMod ]
     examineText: suit-mod-thermal-visor
