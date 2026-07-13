@@ -27,4 +27,10 @@ public sealed partial class RevolutionaryRuleComponent : Component
     /// </summary>
     [DataField, ViewVariables(VVAccess.ReadWrite)]
     public TimeSpan ShuttleCallTime = TimeSpan.FromMinutes(5);
+
+    [DataField]
+    public float ConversionFactor = .35f;
+
+    [DataField]
+    public bool Overt = false;
 }

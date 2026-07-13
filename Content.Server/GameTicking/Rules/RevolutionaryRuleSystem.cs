@@ -1,5 +1,6 @@
 using System.Linq;
 using Content.Server.Administration.Logs;
+using Content.Server.AlertLevel;
 using Content.Server.Antag;
 using Content.Server.EUI;
 using Content.Server.GameTicking.Rules.Components;
@@ -11,6 +12,7 @@ using Content.Server.Roles;
 using Content.Server.RoundEnd;
 using Content.Server.Shuttles.Systems;
 using Content.Server.Station.Systems;
+using Content.Server.Chat.Systems;
 using Content.Shared.Database;
 using Content.Shared.Flash;
 using Content.Shared.GameTicking.Components;
@@ -26,6 +28,8 @@ using Content.Shared.Revolutionary;
 using Content.Shared.Revolutionary.Components;
 using Content.Shared.Roles.Components;
 using Content.Shared.Stunnable;
+using Robust.Shared.Audio;
+using Robust.Shared.Audio.Systems;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 using Content.Shared.Cuffs.Components;
@@ -38,7 +42,9 @@ namespace Content.Server.GameTicking.Rules;
 /// </summary>
 public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<RevolutionaryRuleComponent>
 {
+    [Dependency] private AlertLevelSystem _alertLevelSystem = default!;
     [Dependency] private AntagSelectionSystem _antag = default!;
+    [Dependency] private ChatSystem _chat = default!;
     [Dependency] private EmergencyShuttleSystem _emergencyShuttle = default!;
     [Dependency] private EuiManager _euiMan = default!;
     [Dependency] private IAdminLogManager _adminLogManager = default!;
@@ -50,6 +56,7 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
     [Dependency] private PopupSystem _popup = default!;
     [Dependency] private RoleSystem _role = default!;
     [Dependency] private RoundEndSystem _roundEnd = default!;
+    [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private SharedStunSystem _stun = default!;
     [Dependency] private StationSystem _stationSystem = default!;
 
@@ -308,6 +315,40 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
         }
 
         return gone == list.Count || list.Count == 0;
+    }
+
+    private void CheckIfOvert(RevolutionaryRuleComponent rule)
+    {
+        var revs = AllEntityQuery<HeadRevolutionaryComponent>();
+        var crew = AllEntityQuery<HumanoidProfileComponent>();
+        var totalConverts = 0;
+        var crewList = new List<EntityUid>();
+
+        while (revs.MoveNext(out var uid, out _))
+        {
+            if (_mind.TryGetMind(uid, out var revMindId, out _))
+            {
+                if (_role.MindHasRole<RevolutionaryRoleComponent>(revMindId, out var role))
+                {
+                    if (role != null)
+                        totalConverts += (int) role.Value.Comp2.ConvertedCount;
+                }
+            }
+        }
+
+        while (crew.MoveNext(out var uid, out _))
+        {
+            crewList.Add(uid);
+        }
+
+        if ((totalConverts >= crewList.Count * rule.ConversionFactor) && !rule.Overt)
+        {
+            var msg = Loc.GetString("oh shit revs");
+            _chat.DispatchGlobalAnnouncement(msg, playSound: false, colorOverride: Color.Red);
+            _audio.PlayGlobal(new SoundPathSpecifier("/Audio/Misc/notice1.ogg"), Filter.Broadcast(), true);
+
+            rule.Overt = true;
+        }
     }
 
     private static readonly string[] Outcomes =
