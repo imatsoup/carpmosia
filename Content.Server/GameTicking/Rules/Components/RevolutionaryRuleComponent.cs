@@ -28,9 +28,17 @@ public sealed partial class RevolutionaryRuleComponent : Component
     [DataField, ViewVariables(VVAccess.ReadWrite)]
     public TimeSpan ShuttleCallTime = TimeSpan.FromMinutes(5);
 
+    // Carpmosia-start - Soft revs rework
+    /// <summary>
+    ///  The percentage of the crew that needs to be converted before we start rolling on the overt announcement
+    /// </summary>
     [DataField]
     public float ConversionFactor = .35f;
 
+    /// <summary>
+    /// Whether we're already Overt or not.
+    /// </summary>
     [DataField]
     public bool Overt = false;
+    // Carpmosia-end - Soft revs rework
 }

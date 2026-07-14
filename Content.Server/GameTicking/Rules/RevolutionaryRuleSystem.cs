@@ -1,6 +1,6 @@
 using System.Linq;
 using Content.Server.Administration.Logs;
-using Content.Server.AlertLevel;
+using Content.Server.AlertLevel; // Carpmosia-edit - Soft Revs Rework
 using Content.Server.Antag;
 using Content.Server.EUI;
 using Content.Server.GameTicking.Rules.Components;
@@ -12,7 +12,7 @@ using Content.Server.Roles;
 using Content.Server.RoundEnd;
 using Content.Server.Shuttles.Systems;
 using Content.Server.Station.Systems;
-using Content.Server.Chat.Systems;
+using Content.Server.Chat.Systems; // Carpmosia-edit - Soft Revs Rework
 using Content.Shared.Database;
 using Content.Shared.Flash;
 using Content.Shared.GameTicking.Components;
@@ -27,10 +27,10 @@ using Content.Shared.NPC.Systems;
 using Content.Shared.Revolutionary;
 using Content.Shared.Revolutionary.Components;
 using Content.Shared.Roles.Components;
-using Content.Shared.SSDIndicator;
+using Content.Shared.SSDIndicator; // Carpmosia-edit - Soft Revs Rework
 using Content.Shared.Stunnable;
-using Robust.Shared.Audio;
-using Robust.Shared.Audio.Systems;
+using Robust.Shared.Audio; // Carpmosia-edit - Soft Revs Rework
+using Robust.Shared.Audio.Systems; // Carpmosia-edit - Soft Revs Rework
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 using Content.Shared.Cuffs.Components;
@@ -43,9 +43,9 @@ namespace Content.Server.GameTicking.Rules;
 /// </summary>
 public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<RevolutionaryRuleComponent>
 {
-    [Dependency] private AlertLevelSystem _alertLevelSystem = default!;
+    [Dependency] private AlertLevelSystem _alertLevelSystem = default!; // Carpmosia-edit - Soft Revs Rework
     [Dependency] private AntagSelectionSystem _antag = default!;
-    [Dependency] private ChatSystem _chat = default!;
+    [Dependency] private ChatSystem _chat = default!; // Carpmosia-edit - Soft Revs Rework
     [Dependency] private EmergencyShuttleSystem _emergencyShuttle = default!;
     [Dependency] private EuiManager _euiMan = default!;
     [Dependency] private IAdminLogManager _adminLogManager = default!;
@@ -57,7 +57,7 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
     [Dependency] private PopupSystem _popup = default!;
     [Dependency] private RoleSystem _role = default!;
     [Dependency] private RoundEndSystem _roundEnd = default!;
-    [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedAudioSystem _audio = default!; // Carpmosia-edit - Soft Revs Rework
     [Dependency] private SharedStunSystem _stun = default!;
     [Dependency] private StationSystem _stationSystem = default!;
 
@@ -191,6 +191,15 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
 
         if (mind is { UserId: not null } && _player.TryGetSessionById(mind.UserId, out var session))
             _antag.SendBriefing(session, Loc.GetString("rev-role-greeting"), Color.Red, revComp.RevStartSound);
+
+        // Carpmosia-start - Soft Rev Rework
+        foreach (var rule in GameTicker.GetActiveGameRules<RevolutionaryRuleComponent>())
+        {
+            if(rule.Comp.Overt)
+                continue;
+            CheckIfOvert(rule);
+        }
+        // Carpmosia-end - Soft Rev Rework
     }
 
     //TODO: Enemies of the revolution
@@ -320,6 +329,7 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
         return gone == list.Count || list.Count == 0;
     }
 
+    // Carpmosia-start - Soft Revs Rework
     private void CheckIfOvert(RevolutionaryRuleComponent rule)
     {
         var revs = AllEntityQuery<HeadRevolutionaryComponent>();
@@ -350,13 +360,14 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
 
         if ((totalConverts >= crewList.Count * rule.ConversionFactor) && !rule.Overt)
         {
-            var msg = Loc.GetString("oh shit revs");
+            var msg = Loc.GetString("revs-overt-message");
             _chat.DispatchGlobalAnnouncement(msg, playSound: false, colorOverride: Color.Red);
             _audio.PlayGlobal(new SoundPathSpecifier("/Audio/Misc/notice1.ogg"), Filter.Broadcast(), true);
 
             rule.Overt = true;
         }
     }
+    // Carpmosia-end - Soft Revs Rework
 
     private static readonly string[] Outcomes =
     {
