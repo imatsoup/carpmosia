@@ -27,6 +27,7 @@ using Content.Shared.NPC.Systems;
 using Content.Shared.Revolutionary;
 using Content.Shared.Revolutionary.Components;
 using Content.Shared.Roles.Components;
+using Content.Shared.SSDIndicator;
 using Content.Shared.Stunnable;
 using Robust.Shared.Audio;
 using Robust.Shared.Audio.Systems;
@@ -95,6 +96,7 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
                 GameTicker.EndGameRule(uid, gameRule);
             }
         }
+        CheckIfOvert(component);
     }
 
     protected override void AppendRoundEndText(EntityUid uid,
@@ -338,6 +340,9 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
 
         while (crew.MoveNext(out var uid, out _))
         {
+            if(!TryComp<SSDIndicatorComponent>(uid, out var ssd) || ssd.IsSSD || _mobState.IsDead(uid))
+                continue;
+
             crewList.Add(uid);
         }
 
