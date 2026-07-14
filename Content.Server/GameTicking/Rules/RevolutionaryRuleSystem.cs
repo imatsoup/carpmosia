@@ -32,6 +32,7 @@ using Content.Shared.Stunnable;
 using Robust.Shared.Audio; // Carpmosia-edit - Soft Revs Rework
 using Robust.Shared.Audio.Systems; // Carpmosia-edit - Soft Revs Rework
 using Robust.Shared.Prototypes;
+using Robust.Shared.Random; // Carpmosia-edit - Soft Revs Rework
 using Robust.Shared.Timing;
 using Content.Shared.Cuffs.Components;
 using Robust.Shared.Player;
@@ -50,6 +51,7 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
     [Dependency] private EuiManager _euiMan = default!;
     [Dependency] private IAdminLogManager _adminLogManager = default!;
     [Dependency] private IGameTiming _timing = default!;
+    [Dependency] private IRobustRandom _random = default!; // Carpmosia-edit - Soft Revs Rework;
     [Dependency] private ISharedPlayerManager _player = default!;
     [Dependency] private MindSystem _mind = default!;
     [Dependency] private MobStateSystem _mobState = default!;
@@ -330,6 +332,9 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
     }
 
     // Carpmosia-start - Soft Revs Rework
+    /// <summary>
+    /// Check if we've passed the threshold to for the alert message to go out.
+    /// </summary>
     private void CheckIfOvert(RevolutionaryRuleComponent rule)
     {
         var revs = AllEntityQuery<HeadRevolutionaryComponent>();
@@ -358,7 +363,7 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
             crewList.Add(uid);
         }
 
-        if ((totalConverts >= crewList.Count * rule.ConversionFactor) && !rule.Overt)
+        if ((totalConverts >= crewList.Count *  _random.NextFloat(rule.ConversionFactor, rule.ConversionFactor + 0.05f)) && !rule.Overt)
         {
             var msg = Loc.GetString("revs-overt-message");
             _chat.DispatchGlobalAnnouncement(msg, playSound: false, colorOverride: Color.Red);
