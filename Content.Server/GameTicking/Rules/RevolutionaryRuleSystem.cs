@@ -96,7 +96,8 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
                 GameTicker.EndGameRule(uid, gameRule);
             }
         }
-        CheckIfOvert(component);
+        // Feels like asking for trouble but can't find a better spot for it.
+        CheckIfOvert(component); // Carpmosia-edit - Soft Revs Rework
     }
 
     protected override void AppendRoundEndText(EntityUid uid,
@@ -336,6 +337,7 @@ public sealed partial class RevolutionaryRuleSystem : GameRuleSystem<Revolutiona
                         totalConverts += (int) role.Value.Comp2.ConvertedCount;
                 }
             }
+            totalConverts += 1; // Head Revs count too.
         }
 
         while (crew.MoveNext(out var uid, out _))
