@@ -1,0 +1,41 @@
+- type: entity
+  name: Mamba submachine gun
+  parent: [BaseWeaponSubMachineGun, BaseSyndicateContraband]
+  id: WeaponSubMachineGunMamba
+  description: A silenced submachinegun. Lesser known than its contemporaries, the Mamba prioritizes stealth and ease-of-use over the ability to take on multiple opponents. Intended for high-stakes assassinations. Feeds from .35 SMG magazines.
+  components:
+  - type: Sprite
+    sprite: _Carpmosia/Objects/Weapons/Guns/SMGs/mamba.rsi
+    layers:
+    - state: base
+      map: ["enum.GunVisualLayers.Base"]
+    - state: mag-0
+      map: ["enum.GunVisualLayers.Mag"]
+  - type: Clothing
+    sprite: _Carpmosia/Objects/Weapons/Guns/SMGs/mamba.rsi
+  - type: Wieldable
+    unwieldOnUse: false
+  - type: GunWieldBonus
+    minAngle: -19
+    maxAngle: -16
+  - type: Gun
+    minAngle: 21
+    maxAngle: 32
+    shotsPerBurst: 5
+    availableModes:
+    - Burst
+    - FullAuto
+    - SemiAuto
+    soundGunshot:
+      path: /Audio/Weapons/Guns/Gunshots/silenced.ogg
+      params:
+        volume: -14
+  - type: ChamberMagazineAmmoProvider
+    autoEject: true
+  - type: MagazineVisuals
+    magState: mag
+    steps: 5
+    zeroVisible: true
+  - type: Appearance
+  - type: StaticPrice
+    price: 5000
