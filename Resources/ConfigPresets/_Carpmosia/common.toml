@@ -31,6 +31,8 @@ ic.punctuation = true
 
 # CCVars.Misc
 procgen.preload = false
+afk.time = 1800
+afk.confirm_timeout = 150
 playtime.save_interval = 300
 
 # CCVars.Server
@@ -45,3 +47,5 @@ shuttle.arrivals_returns = true
 vote.preset_enabled = false
 vote.map_enabled = false
 vote.timermap = 180
+vote.restart_required_ratio = 0.65
+vote.restart_not_allowed_when_admin_online = false
