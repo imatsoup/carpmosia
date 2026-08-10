@@ -414,6 +414,10 @@
   - type: OreSiloClient
   - type: LatheAnnouncing
     channels: [Security]
+  ## Carpmosia-start - Silo Adjustments
+  - type: AccessReader
+    access: [["Armory"]]
+  ## Carpmosia-end - Silo Adjustments
 
 - type: entity
   id: AmmoTechFab

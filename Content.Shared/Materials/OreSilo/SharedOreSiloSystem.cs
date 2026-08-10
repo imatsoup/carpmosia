@@ -158,7 +158,7 @@ public abstract partial class SharedOreSiloSystem : EntitySystem
         if (_transform.GetGrid(client) != _transform.GetGrid(silo.Owner))
             return false;
 
-        if (!_transform.InRange((silo.Owner, silo.Comp2), client, silo.Comp1.Range))
+        if (!_transform.InRange((silo.Owner, silo.Comp2), client, silo.Comp1.Range) && silo.Comp1.IsSecondary) // Carpmosia-edit - Silo Adjustments
             return false;
 
         return true;

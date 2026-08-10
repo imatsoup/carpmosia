@@ -24,6 +24,14 @@ public sealed partial class OreSiloComponent : Component
     /// </remarks>
     [DataField, AutoNetworkedField]
     public float Range = 20f;
+
+    // Carpmosia-start - Silo Adjustments
+    /// <summary>
+    /// Whether the silo is considered the primary, and thus ignores the above range value.
+    /// </summary>
+    [DataField, AutoNetworkedField]
+    public bool IsSecondary = true;
+    // Carpmosia-end - Silo Adjustments
 }
 
 [Serializable, NetSerializable]

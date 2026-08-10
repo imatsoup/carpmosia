@@ -30,8 +30,14 @@ public sealed partial class OreSiloSystem : SharedOreSiloSystem
 
         var xform = Transform(ent);
 
-        // Sneakily uses override with TComponent parameter
-        _entityLookup.GetEntitiesInRange(xform.Coordinates, ent.Comp.Range, _clientLookup);
+        // Carpmosia-start - Silo Adjustments
+        if (!ent.Comp.IsSecondary)
+            _entityLookup.GetEntitiesOnMap(xform.MapID, _clientLookup);
+
+        else
+            // Sneakily uses override with TComponent parameter
+            _entityLookup.GetEntitiesInRange(xform.Coordinates, ent.Comp.Range, _clientLookup);
+        // Carpmosia-end - Silo Adjustments
 
         foreach (var client in _clientLookup)
         {
