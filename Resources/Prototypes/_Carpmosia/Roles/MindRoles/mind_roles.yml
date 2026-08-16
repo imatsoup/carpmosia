@@ -9,3 +9,17 @@
     exclusiveAntag: true
     roleType: TeamAntagonist
     subtype: role-subtype-blood-bound
+
+# TODO: Saboteur antag proto and specifier
+
+- type: entity
+  parent: BaseMindRoleAntag
+  id: MindRoleTeamSaboteur
+  name: Syndicate Saboteur Role
+  components:
+  - type: SyndicateSaboteurRole
+  - type: MindRole
+    antagPrototype: SyndicateSaboteur
+    exclusiveAntag: true
+    roleType: TeamAntagonist
+    subtype: role-subtype-blood-bound
