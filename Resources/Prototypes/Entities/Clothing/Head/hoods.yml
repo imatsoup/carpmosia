@@ -173,6 +173,7 @@
     - Snout
     - HeadTop
     - HeadSide
+  - type: RadProtectionArmor # Carpmosia-edit - Offmed Port
 
 - type: entity
   parent: ClothingHeadBase

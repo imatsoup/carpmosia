@@ -167,6 +167,10 @@
   - type: HideLayerClothing
     slots:
     - Tail
+  # Carpmosia-start - Offmed Port
+  - type: RadProtectionArmor
+    modifier: 0.3
+  # Carpmosia-end - Offmed Port
 
 - type: entity
   abstract: true

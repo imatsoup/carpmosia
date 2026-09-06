@@ -1,4 +1,3 @@
-
 using Content.Shared.FixedPoint;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Mobs;
@@ -19,10 +18,6 @@ public sealed partial class RadiationSicknessSystem : EntitySystem
     [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private StatusEffectsSystem _statusEffects = default!;
 
-    [Dependency] private EntityQuery<RadProtectionStatusEffectComponent> _protQuery = default!;
-
-     EntProtoId RadProtection = "RadProtection";
-
     private void OnShutdown(Entity<RadiationThresholdsComponent> ent, ref ComponentShutdown args)
     {
         if (ent.Comp.CurrentThresholdState is { } effect)
@@ -33,13 +28,11 @@ public sealed partial class RadiationSicknessSystem : EntitySystem
     [SubscribeLocalEvent]
     private void OnIrradiated(Entity<RadiationThresholdsComponent> ent, ref OnIrradiatedEvent args)
     {
+        // Not realistic, but you're already dying to radiation and I don't like kicking you while you're down.
         if (!_mobState.IsAlive(ent))
             return;
 
-        var radsToAdd = args.TotalRads;
-
-        if (_statusEffects.TryGetStatusEffect(ent, RadProtection, out var protection) && _protQuery.TryComp(protection, out var comp))
-            radsToAdd = radsToAdd * comp.Modifier;
+        var radsToAdd = args.TotalRads * ent.Comp.Modifier;
 
         ent.Comp.Rads += radsToAdd;
 
