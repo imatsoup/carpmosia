@@ -25,10 +25,18 @@ public sealed partial class RadiationFlushEffectSystem : EntitySystem
             if(!_radThresholdQuery.TryComp(target, out var threshold))
                 continue;
 
-            var ev = new OnRemoveRadsEvent(flush.Amount, uid);
+            flush.NextUpdate = _timing.CurTime + flush.UpdateInterval;
+            Dirty(uid, flush);
+
+            targets.Add((target, flush.Amount));
+
+        }
+        // work around a concurrent modification exception
+        foreach (var (target, amount) in targets)
+        {
+            var ev = new OnRemoveRadsEvent(amount, target);
 
             RaiseLocalEvent(target, ev);
-
         }
     }
 }

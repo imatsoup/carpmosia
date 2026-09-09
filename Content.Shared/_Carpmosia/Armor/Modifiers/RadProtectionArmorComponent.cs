@@ -14,5 +14,5 @@ public sealed partial class RadProtectionArmorComponent : Component
     /// How much this should modify the amount of rads received
     /// </summary>
     [DataField]
-    public float Modifier = 0.5f;
+    public float Modifier = 0.1f;
 }

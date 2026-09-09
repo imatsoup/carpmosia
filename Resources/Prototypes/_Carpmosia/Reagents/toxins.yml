@@ -307,6 +307,10 @@
         damage:
           types:
             Radiation: 3
+      - !type:ModifyStatusEffect
+        type: Add
+        effectProto: RadPoisonMutagen
+        time: 0.5
 
 - type: reagent
   id: HeartbreakerToxin

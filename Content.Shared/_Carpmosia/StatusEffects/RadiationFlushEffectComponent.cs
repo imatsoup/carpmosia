@@ -14,7 +14,7 @@ public sealed partial class RadiationFlushEffectComponent : Component
     public TimeSpan UpdateInterval = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// How much damage these organs should receive.
+    /// How much the character's rads should increase or decrease by.
     /// </summary>
     [DataField]
     public float Amount = 0.5f;
