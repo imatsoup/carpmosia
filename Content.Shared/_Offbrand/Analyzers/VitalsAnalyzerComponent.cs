@@ -61,4 +61,7 @@ public sealed partial class VitalsData
 
     [DataField]
     public float BloodLevel;
+
+    [DataField]
+    public float Rads;
 }

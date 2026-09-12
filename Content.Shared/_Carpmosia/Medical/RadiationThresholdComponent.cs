@@ -1,5 +1,6 @@
 using Content.Shared._Carpmosia.Armor.Modifiers;
 using Content.Shared._Offbrand.StatusEffects;
+using Content.Shared._Offbrand.Analyzers;
 using Content.Shared.FixedPoint;
 using Content.Shared.Mobs;
 using Robust.Shared.GameStates;
@@ -11,7 +12,7 @@ namespace Content.Shared.Medical;
 /// Component for the simple surgical tool used for brain extraction.
 /// </summary>
 [RegisterComponent, NetworkedComponent, AutoGenerateComponentState]
-[Access(typeof(RadiationSicknessSystem), typeof(RadProtectionStatusEffectSystem), typeof(RadProtectionArmorSystem))]
+[Access(typeof(RadiationSicknessSystem), typeof(RadProtectionStatusEffectSystem), typeof(RadProtectionArmorSystem), typeof(VitalsAnalyzerSystem))]
 public sealed partial class RadiationThresholdsComponent : Component
 {
     /// <summary>
@@ -23,7 +24,7 @@ public sealed partial class RadiationThresholdsComponent : Component
     [DataField, AutoNetworkedField]
     public EntProtoId? CurrentThresholdState;
 
-    [DataField]
+    [DataField, AutoNetworkedField]
     public FixedPoint2 Rads = 0f;
 
     [DataField, AutoNetworkedField]

@@ -5,6 +5,7 @@ using Content.Shared.Body.Systems;
 using Content.Shared.Chemistry.EntitySystems;
 using Content.Shared.Chemistry.Reagent;
 using Content.Shared.FixedPoint;
+using Content.Shared.Medical;
 using Content.Shared.Metabolism;
 using Robust.Shared.Prototypes;
 
@@ -96,28 +97,32 @@ public sealed partial class VitalsAnalyzerSystem : EntitySystem
         if (!TryComp<BrainDamageThresholdsComponent>(uid, out var brainDamageThresholds))
             return null;
 
+        if (!TryComp<RadiationThresholdsComponent>(uid, out var radThresholds))
+            return null;
+
         var (upper, lower) = _perfusion.BloodPressure((uid, heartrate));
 
         var hasNonMedical = false;
         var reagents = withWounds ? SampleReagents(uid, out hasNonMedical) : null;
 
         return new VitalsData()
-            {
-                BrainHealth = 1f - brainDamageThresholds.DisplayDamage.Float() / brainDamageThresholds.DisplayMaxDamage.Float(),
-                BloodPressure = (upper, lower),
-                HeartRate = _perfusion.HeartRate((uid, heartrate)),
-                HeartStrain = heartrate.Strain,
-                Etco2 = _perfusion.Etco2((uid, heartrate)),
-                RespiratoryRate = _perfusion.RespiratoryRate((uid, heartrate)),
-                RespiratoryRateModifier = _perfusion.ComputeRespiratoryRateModifier((uid, heartrate)),
-                Spo2 = _perfusion.Spo2((uid, heartrate)).Float(),
-                Etco2Name = heartrate.Etco2Name,
-                Etco2GasName = heartrate.Etco2GasName,
-                Spo2Name = heartrate.Spo2Name,
-                Spo2GasName = heartrate.Spo2GasName,
-                Reagents = reagents,
-                NonMedicalReagents = hasNonMedical,
-                BloodLevel = _bloodstream.GetBloodLevel(uid),
-            };
+        {
+            BrainHealth = 1f - brainDamageThresholds.DisplayDamage.Float() / brainDamageThresholds.DisplayMaxDamage.Float(),
+            BloodPressure = (upper, lower),
+            HeartRate = _perfusion.HeartRate((uid, heartrate)),
+            HeartStrain = heartrate.Strain,
+            Etco2 = _perfusion.Etco2((uid, heartrate)),
+            RespiratoryRate = _perfusion.RespiratoryRate((uid, heartrate)),
+            RespiratoryRateModifier = _perfusion.ComputeRespiratoryRateModifier((uid, heartrate)),
+            Spo2 = _perfusion.Spo2((uid, heartrate)).Float(),
+            Etco2Name = heartrate.Etco2Name,
+            Etco2GasName = heartrate.Etco2GasName,
+            Spo2Name = heartrate.Spo2Name,
+            Spo2GasName = heartrate.Spo2GasName,
+            Reagents = reagents,
+            NonMedicalReagents = hasNonMedical,
+            BloodLevel = _bloodstream.GetBloodLevel(uid),
+            Rads = radThresholds.Rads.Float(),
+        };
     }
 }

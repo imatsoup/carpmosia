@@ -56,9 +56,15 @@
         </BoxContainer>
         <BoxContainer Orientation="Vertical">
             <Label StyleClasses="field-heart" Text="{Loc 'offbrand-vitals-heart'}" />
-            <BoxContainer Orientation="Vertical">
-                <Label StyleClasses="field-label" Text="{Loc 'offbrand-vitals-heart-rate'}" />
-                <RichTextLabel Name="HeartRateValue" StyleClasses="field-value" />
+            <BoxContainer Orientation="Horizontal">
+                <BoxContainer Orientation="Vertical" HorizontalExpand="True">
+                    <Label StyleClasses="field-label" Text="{Loc 'offbrand-vitals-heart-rate'}" />
+                    <RichTextLabel Name="HeartRateValue" StyleClasses="field-value" />
+                </BoxContainer>
+                <BoxContainer Orientation="Vertical" HorizontalExpand="True">
+                    <Label StyleClasses="field-label" Text="{Loc 'offbrand-vitals-rads'}" />
+                    <RichTextLabel Name="RadValue" StyleClasses="field-value" />
+                </BoxContainer>
             </BoxContainer>
         </BoxContainer>
     </BoxContainer>

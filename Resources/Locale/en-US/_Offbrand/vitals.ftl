@@ -31,3 +31,6 @@ offbrand-vitals-blood-volume-value = [color=white]{$value}[/color][color=darkgra
 offbrand-vitals-heart = Heart
 offbrand-vitals-heart-rate = Heartrate
 offbrand-vitals-heart-rate-value = [color=white]{$value}[/color]{-offbrand-unit(unit: "bpm")}
+
+offbrand-vitals-rads = Rads
+offbrand-vitals-rads-value = [color=white]{$value}[/color][color=darkgray]rads[/color]

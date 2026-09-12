@@ -51,7 +51,10 @@ public sealed partial class RadiationSicknessSystem : EntitySystem
     {
         var targetEffect = ent.Comp.Thresholds.HighestMatch(ent.Comp.Rads);
         if (targetEffect == ent.Comp.CurrentThresholdState)
+        {
+            Dirty(ent);
             return;
+        }
 
         var seenTarget = targetEffect is null;
         if (ent.Comp.CurrentThresholdState is { } oldEffect)
@@ -63,7 +66,6 @@ public sealed partial class RadiationSicknessSystem : EntitySystem
         ent.Comp.CurrentThresholdState = targetEffect;
         Dirty(ent);
     }
-
 
 }
 public readonly record struct OnRemoveRadsEvent(float Rads, EntityUid? Origin)

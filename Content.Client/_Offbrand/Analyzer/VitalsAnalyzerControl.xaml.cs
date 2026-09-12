@@ -63,5 +63,6 @@ public sealed partial class VitalsAnalyzerControl : BoxContainer
         BloodVolumeValue.Text = Loc.GetString("offbrand-vitals-blood-volume-value", ("value", $"{data.BloodLevel * 100:F0}"));
 
         HeartRateValue.Text = Loc.GetString("offbrand-vitals-heart-rate-value", ("value", data.HeartRate));
+        RadValue.Text = Loc.GetString("offbrand-vitals-rads-value", ("value", $"{Math.Round(data.Rads, 1)}"));
     }
 }
