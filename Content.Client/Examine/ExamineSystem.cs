@@ -2,6 +2,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using Content.Client._Offbrand.Examine; // Offbrand - BUIs in examine
+using Content.Client.UserInterface.Controls; // Offbrand - Pinnable examine
 using Content.Client.Verbs;
 using Content.Shared.Examine;
 using Content.Shared.IdentityManagement;
@@ -48,6 +49,8 @@ namespace Content.Client.Examine
         private readonly Dictionary<Enum, RichTextLabel> _elaborateTooltipLabels = new();
         private BoxContainer? _elaborateTooltipBox;
         // End Offbrand - examine elaboration
+        private Button? _examineTooltipPinButton; // Offbrand - Pinnable examine
+        private bool? _examineTooltipPinned; // Offbrand - Pinnable examine
         private BoxContainer? _embeddedUserInterfaceBox; // Offbrand - BUIs in examine
 
         public override void Initialize()
@@ -181,15 +184,15 @@ namespace Content.Client.Examine
                            displayTarget != entity && HasComp<Content.Shared.Body.BodyComponent>(displayTarget);
 
             _examinedEntity = entity;
-            OpenTooltip(player.Value, displayTarget, ev.CenterAtCursor, ev.OpenAtOldTooltip, ev.KnowTarget, showBody); // Offbrand
+            OpenTooltip(player.Value, displayTarget, ev.CenterAtCursor, ev.OpenAtOldTooltip, ev.KnowTarget, showBody, ev.Pinnable); // Offbrand
             // End Offbrand - separate body focus
             UpdateTooltipInfo(player.Value, entity, ev.Message, ev.Verbs, getVerbs: false);
         }
 
-        public override void SendExamineTooltip(EntityUid player, EntityUid target, FormattedMessage message, bool getVerbs, bool centerAtCursor, bool showBody) // Offbrand
+        public override void SendExamineTooltip(EntityUid player, EntityUid target, FormattedMessage message, bool getVerbs, bool centerAtCursor, bool showBody, bool pinnable = false) // Offbrand
         {
             _examinedEntity = target; // Offbrand - separate body focus
-            OpenTooltip(player, target, centerAtCursor, showBody: showBody); // Offbrand
+            OpenTooltip(player, target, centerAtCursor, showBody: showBody, pinnable: pinnable); // Offbrand
             UpdateTooltipInfo(player, target, message, getVerbs: getVerbs);
         }
 
@@ -226,7 +229,7 @@ namespace Content.Client.Examine
         ///     not fill it with information. This is done when the server sends examine info/verbs,
         ///     or immediately if it's entirely clientside.
         /// </summary>
-        public void OpenTooltip(EntityUid player, EntityUid target, bool centeredOnCursor=true, bool openAtOldTooltip=true, bool knowTarget = true, bool showBody = false) // Offbrand
+        public void OpenTooltip(EntityUid player, EntityUid target, bool centeredOnCursor=true, bool openAtOldTooltip=true, bool knowTarget = true, bool showBody = false, bool pinnable = false) // Offbrand
         {
             // Close any examine tooltip that might already be opened
             // Before we do that, save its position. We'll prioritize opening any new popups there if
@@ -255,6 +258,7 @@ namespace Content.Client.Examine
             // Actually open the tooltip.
             _examineTooltipOpen = new Popup { MaxWidth = 400 };
             _examineTooltipOpen.OnPopupHide += CloseTooltip; // Offbrand - BUIs in examine
+            _examineTooltipOpen.CloseOnClick = true; // Offbrand - Pinnable examine
             _userInterfaceManager.ModalRoot.AddChild(_examineTooltipOpen);
             var panel = new PanelContainer() { Name = "ExaminePopupPanel" };
             panel.AddStyleClass(StyleClassEntityTooltip);
@@ -327,6 +331,23 @@ namespace Content.Client.Examine
                 hBox.AddChild(label);
             }
 
+            // Begin Offbrand - Pinnable examine
+            if (pinnable)
+            {
+                _examineTooltipPinned = false;
+                _examineTooltipPinButton = new Button
+                {
+                    Name = "ExamineTooltipPinButton",
+                    Text = "Pin",
+                    Mode = BaseButton.ActionMode.Release,
+                    Pressed = false,
+                };
+                _examineTooltipPinButton.OnPressed += ToggleExaminePinned;
+                hBox.AddChild(new HSpacer {HorizontalExpand = true});
+                hBox.AddChild(_examineTooltipPinButton);
+            }
+            // End Offbrand - Pinnable examine
+
             panel.Measure(Vector2Helpers.Infinity);
             var size = Vector2.Max(new Vector2(minWidth, 0), panel.DesiredSize);
 
@@ -383,6 +404,8 @@ namespace Content.Client.Examine
             {
                 totalVerbs.UnionWith(verbs);
             }
+
+            _examineTooltipOpen?.CloseOnClick = !_examineTooltipPinButton?.Pressed ?? true; // Offbrand - Pinnable examine
 
             // Begin Offbrand - BUIs in examine
             var embeddedUserInterfaceBox = new BoxContainer
@@ -502,7 +525,7 @@ namespace Content.Client.Examine
             }
         }
 
-        public void DoExamine(EntityUid entity, bool centeredOnCursor = true, EntityUid? userOverride = null, EntityUid? displayTarget = null)
+        public void DoExamine(EntityUid entity, bool centeredOnCursor = true, EntityUid? userOverride = null, EntityUid? displayTarget = null, bool pinnable = false)  // Offbrand - Pinnable examine
         {
             var playerEnt = userOverride ?? _playerManager.LocalEntity;
             if (playerEnt == null)
@@ -515,7 +538,7 @@ namespace Content.Client.Examine
 
             // Begin Offbrand - separate body focus
             _examinedEntity = entity;
-            OpenTooltip(playerEnt.Value, focusTarget, centeredOnCursor, openAtOldTooltip, showBody: showBody);
+            OpenTooltip(playerEnt.Value, focusTarget, centeredOnCursor, openAtOldTooltip, showBody: showBody, pinnable: pinnable); // Offbrand - Pinnable examine
             // End Offbrand - separate body focus
 
             // Always update tooltip info from client first.
@@ -532,7 +555,7 @@ namespace Content.Client.Examine
                     _idCounter += 1;
                 }
                 _requestDisplayTarget = displayTarget; // Offbrand - separate body focus
-                RaiseNetworkEvent(new ExamineSystemMessages.RequestExamineInfoMessage(GetNetEntity(entity), _idCounter, true));
+                RaiseNetworkEvent(new ExamineSystemMessages.RequestExamineInfoMessage(GetNetEntity(entity), _idCounter, true, pinnable: pinnable)); // Offbrand - Pinnable examine
             }
             else
             {
@@ -573,11 +596,25 @@ namespace Content.Client.Examine
             _elaborateTooltipBox = null;
             // End Offbrand - examine elaboration
 
+            _examineTooltipPinButton?.OnPressed -= ToggleExaminePinned; // Offbrand - Pinnable examine
+            _examineTooltipPinned = null; // Offbrand - Pinnable examine
+
             if (_requestCancelTokenSource != null)
             {
                 _requestCancelTokenSource.Cancel();
                 _requestCancelTokenSource = null;
             }
+        }
+
+        /// <summary>
+        /// Offbrand: Toggle the examine popup's CloseOnClick field
+        /// </summary>
+        /// <param name="args"></param>
+        private void ToggleExaminePinned(BaseButton.ButtonEventArgs args)
+        {
+            _examineTooltipPinned = !args.Button.Pressed;
+            _examineTooltipPinButton?.Pressed = _examineTooltipPinned.Value;
+            _examineTooltipOpen?.CloseOnClick = !_examineTooltipPinned.Value;
         }
     }
 
