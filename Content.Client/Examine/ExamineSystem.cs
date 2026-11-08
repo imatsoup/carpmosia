@@ -49,7 +49,7 @@ namespace Content.Client.Examine
         private readonly Dictionary<Enum, RichTextLabel> _elaborateTooltipLabels = new();
         private BoxContainer? _elaborateTooltipBox;
         // End Offbrand - examine elaboration
-        private Button? _examineTooltipPinButton; // Offbrand - Pinnable examine
+        private TextureButton? _examineTooltipPinButton; // Offbrand - Pinnable examine
         private bool? _examineTooltipPinned; // Offbrand - Pinnable examine
         private BoxContainer? _embeddedUserInterfaceBox; // Offbrand - BUIs in examine
 
@@ -335,11 +335,10 @@ namespace Content.Client.Examine
             if (pinnable)
             {
                 _examineTooltipPinned = false;
-                _examineTooltipPinButton = new Button
+                _examineTooltipPinButton = new TextureButton
                 {
                     Name = "ExamineTooltipPinButton",
-                    Text = "Pin",
-                    Mode = BaseButton.ActionMode.Release,
+                    TexturePath = "/Textures/Interface/Bwoink/pinned2.png",
                     Pressed = false,
                 };
                 _examineTooltipPinButton.OnPressed += ToggleExaminePinned;
@@ -615,6 +614,9 @@ namespace Content.Client.Examine
             _examineTooltipPinned = !args.Button.Pressed;
             _examineTooltipPinButton?.Pressed = _examineTooltipPinned.Value;
             _examineTooltipOpen?.CloseOnClick = !_examineTooltipPinned.Value;
+            _examineTooltipPinButton?.TexturePath = _examineTooltipPinned.Value
+                ? "/Textures/Interface/Bwoink/pinned.png"
+                : "/Textures/Interface/Bwoink/pinned2.png";
         }
     }
 
