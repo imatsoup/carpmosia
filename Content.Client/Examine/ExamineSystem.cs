@@ -49,9 +49,13 @@ namespace Content.Client.Examine
         private readonly Dictionary<Enum, RichTextLabel> _elaborateTooltipLabels = new();
         private BoxContainer? _elaborateTooltipBox;
         // End Offbrand - examine elaboration
-        private TextureButton? _examineTooltipPinButton; // Offbrand - Pinnable examine
-        private bool? _examineTooltipPinned; // Offbrand - Pinnable examine
         private BoxContainer? _embeddedUserInterfaceBox; // Offbrand - BUIs in examine
+        // Begin Offbrand - pinnable examine
+        private TextureButton? _examineTooltipPinButton;
+        private bool? _examineTooltipPinned;
+        private string _examineTooltipIconPinned = "/Textures/Interface/Bwoink/pinned.png";
+        private string _examineTooltipIconUnpinned = "/Textures/Interface/Bwoink/pinned2.png";
+        // End Offbrand - pinnable examine
 
         public override void Initialize()
         {
@@ -338,7 +342,7 @@ namespace Content.Client.Examine
                 _examineTooltipPinButton = new TextureButton
                 {
                     Name = "ExamineTooltipPinButton",
-                    TexturePath = "/Textures/Interface/Bwoink/pinned2.png",
+                    TexturePath = _examineTooltipPinned.Value ? _examineTooltipIconPinned : _examineTooltipIconUnpinned,
                     Pressed = false,
                 };
                 _examineTooltipPinButton.OnPressed += ToggleExaminePinned;
@@ -614,9 +618,7 @@ namespace Content.Client.Examine
             _examineTooltipPinned = !args.Button.Pressed;
             _examineTooltipPinButton?.Pressed = _examineTooltipPinned.Value;
             _examineTooltipOpen?.CloseOnClick = !_examineTooltipPinned.Value;
-            _examineTooltipPinButton?.TexturePath = _examineTooltipPinned.Value
-                ? "/Textures/Interface/Bwoink/pinned.png"
-                : "/Textures/Interface/Bwoink/pinned2.png";
+            _examineTooltipPinButton?.TexturePath = _examineTooltipPinned.Value ? _examineTooltipIconPinned : _examineTooltipIconUnpinned;
         }
     }
 
