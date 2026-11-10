@@ -53,8 +53,8 @@ namespace Content.Client.Examine
         // Begin Offbrand - pinnable examine
         private TextureButton? _examineTooltipPinButton;
         private bool? _examineTooltipPinned;
-        private string _examineTooltipIconPinned = "/Textures/Interface/Bwoink/pinned.png";
-        private string _examineTooltipIconUnpinned = "/Textures/Interface/Bwoink/pinned2.png";
+        private const string ExamineTooltipIconPinned = "/Textures/Interface/Bwoink/pinned.png";
+        private const string ExamineTooltipIconUnpinned = "/Textures/Interface/Bwoink/pinned2.png";
         // End Offbrand - pinnable examine
 
         public override void Initialize()
@@ -338,11 +338,10 @@ namespace Content.Client.Examine
             // Begin Offbrand - Pinnable examine
             if (pinnable)
             {
-                _examineTooltipPinned = false;
                 _examineTooltipPinButton = new TextureButton
                 {
                     Name = "ExamineTooltipPinButton",
-                    TexturePath = _examineTooltipPinned.Value ? _examineTooltipIconPinned : _examineTooltipIconUnpinned,
+                    TexturePath = _examineTooltipPinned is not null && _examineTooltipPinned.Value ? ExamineTooltipIconPinned : ExamineTooltipIconUnpinned,
                     Pressed = false,
                 };
                 _examineTooltipPinButton.OnPressed += ToggleExaminePinned;
@@ -408,7 +407,7 @@ namespace Content.Client.Examine
                 totalVerbs.UnionWith(verbs);
             }
 
-            _examineTooltipOpen?.CloseOnClick = !_examineTooltipPinButton?.Pressed ?? true; // Offbrand - Pinnable examine
+            _examineTooltipOpen?.CloseOnClick = !_examineTooltipPinned ?? true; // Offbrand - Pinnable examine
 
             // Begin Offbrand - BUIs in examine
             var embeddedUserInterfaceBox = new BoxContainer
@@ -618,7 +617,7 @@ namespace Content.Client.Examine
             _examineTooltipPinned = !args.Button.Pressed;
             _examineTooltipPinButton?.Pressed = _examineTooltipPinned.Value;
             _examineTooltipOpen?.CloseOnClick = !_examineTooltipPinned.Value;
-            _examineTooltipPinButton?.TexturePath = _examineTooltipPinned.Value ? _examineTooltipIconPinned : _examineTooltipIconUnpinned;
+            _examineTooltipPinButton?.TexturePath = _examineTooltipPinned is true ? ExamineTooltipIconPinned : ExamineTooltipIconUnpinned;
         }
     }
 
