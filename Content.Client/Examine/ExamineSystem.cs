@@ -262,7 +262,7 @@ namespace Content.Client.Examine
             // Actually open the tooltip.
             _examineTooltipOpen = new Popup { MaxWidth = 400 };
             _examineTooltipOpen.OnPopupHide += CloseTooltip; // Offbrand - BUIs in examine
-            _examineTooltipOpen.CloseOnClick = true; // Offbrand - Pinnable examine
+            _examineTooltipOpen.CloseOnClick = !pinnable || _examineTooltipPinned == null || !_examineTooltipPinned.Value; // Offbrand - Pinnable examine
             _userInterfaceManager.ModalRoot.AddChild(_examineTooltipOpen);
             var panel = new PanelContainer() { Name = "ExaminePopupPanel" };
             panel.AddStyleClass(StyleClassEntityTooltip);
@@ -341,13 +341,17 @@ namespace Content.Client.Examine
                 _examineTooltipPinButton = new TextureButton
                 {
                     Name = "ExamineTooltipPinButton",
-                    TexturePath = _examineTooltipPinned is not null && _examineTooltipPinned.Value ? ExamineTooltipIconPinned : ExamineTooltipIconUnpinned,
+                    TexturePath = _examineTooltipPinned is not null && _examineTooltipPinned.Value
+                        ? ExamineTooltipIconPinned
+                        : ExamineTooltipIconUnpinned,
                     Pressed = false,
                 };
                 _examineTooltipPinButton.OnPressed += ToggleExaminePinned;
-                hBox.AddChild(new HSpacer {HorizontalExpand = true});
+                hBox.AddChild(new HSpacer { HorizontalExpand = true });
                 hBox.AddChild(_examineTooltipPinButton);
             }
+            else
+                _examineTooltipPinned = null;
             // End Offbrand - Pinnable examine
 
             panel.Measure(Vector2Helpers.Infinity);
@@ -599,7 +603,6 @@ namespace Content.Client.Examine
             // End Offbrand - examine elaboration
 
             _examineTooltipPinButton?.OnPressed -= ToggleExaminePinned; // Offbrand - Pinnable examine
-            _examineTooltipPinned = null; // Offbrand - Pinnable examine
 
             if (_requestCancelTokenSource != null)
             {
