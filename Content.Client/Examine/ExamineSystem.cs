@@ -344,7 +344,7 @@ namespace Content.Client.Examine
                     TexturePath = _examineTooltipPinned is not null && _examineTooltipPinned.Value
                         ? ExamineTooltipIconPinned
                         : ExamineTooltipIconUnpinned,
-                    Pressed = false,
+                    Pressed = _examineTooltipPinned is not null && _examineTooltipPinned.Value,
                 };
                 _examineTooltipPinButton.OnPressed += ToggleExaminePinned;
                 hBox.AddChild(new HSpacer { HorizontalExpand = true });
